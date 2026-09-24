@@ -1,7 +1,9 @@
 import express, { type Express } from 'express';
 import type { Connection } from 'mongoose';
 import { errorHandler, notFoundHandler } from './errors.js';
+import { categoriesRouter } from './routes/categories.js';
 import { healthRouter } from './routes/health.js';
+import { productsRouter } from './routes/products.js';
 
 export interface AppDeps {
   db: Connection;
@@ -18,6 +20,8 @@ export function createApp({ db }: AppDeps): Express {
   app.use(express.json());
 
   app.use('/api/health', healthRouter(db));
+  app.use('/api/products', productsRouter(db));
+  app.use('/api/categories', categoriesRouter());
 
   app.use('/api', notFoundHandler);
   app.use(errorHandler);

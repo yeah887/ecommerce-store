@@ -1,0 +1,74 @@
+<section class="filters">
+  <form class="search" (ngSubmit)="search()">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-icon matPrefix>search</mat-icon>
+      <input
+        matInput
+        name="q"
+        type="search"
+        placeholder="Search products"
+        aria-label="Search products"
+        [ngModel]="searchText()"
+        (ngModelChange)="searchText.set($event)"
+      />
+      @if (searchText()) {
+        <button matIconButton matSuffix type="button" aria-label="Clear search" (click)="clearSearch()">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+    <button matButton="filled" type="submit">Search</button>
+  </form>
+
+  <mat-chip-listbox
+    aria-label="Category"
+    [value]="activeCategory() ?? ''"
+    (change)="selectCategory($event.value || undefined)"
+    hideSingleSelectionIndicator
+  >
+    <mat-chip-option value="">All</mat-chip-option>
+    @for (category of categories; track category) {
+      <mat-chip-option [value]="category">{{ categoryLabels[category] }}</mat-chip-option>
+    }
+  </mat-chip-listbox>
+</section>
+
+<div class="progress">
+  @if (products.isLoading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+</div>
+
+@if (products.error()) {
+  <p class="message">Couldn't load products. Please try again.</p>
+} @else if (products.hasValue()) {
+  @let result = products.value();
+  @if (result.items.length === 0) {
+    <div class="message">
+      <p>{{ emptyMessage() }}</p>
+      @if (result.total > 0) {
+        <button matButton (click)="updateQuery({ page: null })">Back to the first page</button>
+      } @else if (q() || activeCategory()) {
+        <button matButton (click)="showAll()">Show all products</button>
+      }
+    </div>
+  } @else {
+    <ul class="grid">
+      @for (product of result.items; track product.id) {
+        <li><app-product-card [product]="product" /></li>
+      }
+    </ul>
+  }
+
+  @if (result.totalPages > 1) {
+    <mat-paginator
+      [length]="result.total"
+      [pageIndex]="pageNumber() - 1"
+      [pageSize]="pageSize"
+      [hidePageSize]="true"
+      [showFirstLastButtons]="true"
+      (page)="changePage($event)"
+      aria-label="Product pages"
+    />
+  }
+}

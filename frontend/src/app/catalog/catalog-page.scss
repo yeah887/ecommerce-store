@@ -1,0 +1,38 @@
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.search {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  mat-form-field {
+    flex: 1;
+    max-width: 480px;
+  }
+}
+
+.progress {
+  height: 4px;
+  margin-bottom: 16px;
+}
+
+.grid {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.message {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-large);
+}
