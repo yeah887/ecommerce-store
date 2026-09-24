@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import type { Connection, QueryFilter, SortOrder } from 'mongoose';
+import { isValidObjectId, type Connection, type QueryFilter, type SortOrder } from 'mongoose';
 import {
   DEFAULT_PAGE_SIZE,
   MAX_PAGE_SIZE,
@@ -7,6 +7,7 @@ import {
   type Page,
   type Product,
 } from '@store/shared';
+import { HttpError } from '../errors.js';
 import { productModel, toProduct, type ProductDoc } from '../models/product.js';
 import { FieldErrors, queryPositiveInt, queryString } from '../validation.js';
 
@@ -59,6 +60,18 @@ export function productsRouter(db: Connection): Router {
       pageSize,
       totalPages: Math.ceil(total / pageSize),
     };
+    res.json(body);
+  });
+
+  router.get('/:id', async (req, res) => {
+    // Malformed IDs can't match anything, so they are simply not found.
+    const doc = isValidObjectId(req.params.id)
+      ? await products.findById(req.params.id).lean<ProductDoc>()
+      : null;
+    if (!doc) {
+      throw new HttpError(404, 'product_not_found', 'Product not found');
+    }
+    const body: Product = toProduct(doc);
     res.json(body);
   });
 

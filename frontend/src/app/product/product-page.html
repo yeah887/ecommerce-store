@@ -1,0 +1,64 @@
+<div class="progress">
+  @if (product.isLoading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+</div>
+
+@if (notFound()) {
+  <app-not-found
+    heading="Product not found"
+    message="This product doesn't exist or is no longer available."
+  />
+} @else if (product.error()) {
+  <p class="message">Couldn't load this product. Please try again.</p>
+} @else if (product.hasValue()) {
+  @let p = product.value();
+  <a matButton routerLink="/" class="back"><mat-icon>arrow_back</mat-icon> Back to the catalog</a>
+
+  <article class="product">
+    <img class="image" [src]="p.imageUrl" [alt]="p.name" />
+
+    <div class="details">
+      <p class="category">{{ categoryLabels[p.category] }}</p>
+      <h1 class="name">{{ p.name }}</h1>
+      <p class="price">{{ p.priceCents | price }}</p>
+      <p class="description">{{ p.description }}</p>
+
+      <div class="buy">
+        <div class="quantity" role="group" aria-label="Quantity">
+          <button
+            matIconButton
+            type="button"
+            aria-label="Decrease quantity"
+            [disabled]="quantity() <= 1"
+            (click)="setQuantity(quantity() - 1)"
+          >
+            <mat-icon>remove</mat-icon>
+          </button>
+          <input
+            type="number"
+            aria-label="Quantity"
+            min="1"
+            [max]="maxQuantity"
+            [value]="quantity()"
+            (change)="setQuantity($any($event.target).valueAsNumber)"
+          />
+          <button
+            matIconButton
+            type="button"
+            aria-label="Increase quantity"
+            [disabled]="quantity() >= maxQuantity"
+            (click)="setQuantity(quantity() + 1)"
+          >
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+
+        <!-- Wired to the cart in ticket 04. -->
+        <button matButton="filled" type="button" class="add" disabled>
+          <mat-icon>add_shopping_cart</mat-icon> Add to cart
+        </button>
+      </div>
+    </div>
+  </article>
+}

@@ -143,3 +143,32 @@ describe('GET /api/categories', () => {
     expect(res.body).toHaveLength(5);
   });
 });
+
+describe('GET /api/products/:id', () => {
+  const ctx = useTestApp();
+
+  it('returns the product', async () => {
+    const [created] = await productModel(ctx.db).insertMany([fixture('Zeta Lamp', 'home', 'A warm lamp')]);
+
+    const res = await request(ctx.app).get(`/api/products/${created._id}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({
+      id: String(created._id),
+      name: 'Zeta Lamp',
+      description: 'A warm lamp',
+      category: 'home',
+      priceCents: 1000,
+    });
+  });
+
+  it.each([
+    ['an unknown id', '64b7f0000000000000000000'],
+    ['a malformed id', 'not-an-id'],
+  ])('returns 404 for %s', async (_label, id) => {
+    const res = await request(ctx.app).get(`/api/products/${id}`);
+
+    expect(res.status).toBe(404);
+    expect(res.body).toEqual({ error: { code: 'product_not_found', message: 'Product not found' } });
+  });
+});

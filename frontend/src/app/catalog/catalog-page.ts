@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, linkedSignal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -32,6 +32,7 @@ import { ProductCard } from './product-card';
     MatPaginatorModule,
     MatProgressBarModule,
     ProductCard,
+    RouterLink,
   ],
   templateUrl: './catalog-page.html',
   styleUrl: './catalog-page.scss',

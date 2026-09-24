@@ -36,3 +36,16 @@
   color: var(--mat-sys-on-surface-variant);
   font: var(--mat-sys-body-large);
 }
+
+.card-link {
+  display: block;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+  border-radius: 12px;
+
+  &:hover app-product-card,
+  &:focus-visible app-product-card {
+    box-shadow: var(--mat-sys-level2);
+  }
+}

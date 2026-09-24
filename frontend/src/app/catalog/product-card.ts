@@ -17,6 +17,12 @@ import { PricePipe } from '../shared/price.pipe';
     </mat-card>
   `,
   styles: `
+    :host {
+      display: block;
+      height: 100%;
+      border-radius: 12px;
+      transition: box-shadow 150ms;
+    }
     .card {
       height: 100%;
       overflow: hidden;
