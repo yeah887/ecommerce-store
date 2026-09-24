@@ -5,8 +5,8 @@ import { prepareDatabase } from './db/prepare.js';
 
 const config = loadConfig();
 const db = await mongoose.createConnection(config.mongoUrl).asPromise();
-await prepareDatabase(db, { seed: true });
-const app = createApp({ db });
+await prepareDatabase(db, { seed: true, admin: config.admin, bcryptRounds: config.bcryptRounds });
+const app = createApp({ db, config });
 
 const server = app.listen(config.port, () => {
   console.log(`API listening on port ${config.port}`);

@@ -21,3 +21,17 @@
 .spacer {
   flex: 1;
 }
+
+.user-name {
+  max-width: 12em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .user-name,
+  .register-link {
+    display: none;
+  }
+}

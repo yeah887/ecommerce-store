@@ -1,6 +1,24 @@
 <mat-toolbar class="header">
   <a routerLink="/" class="brand">Store</a>
   <span class="spacer"></span>
+
+  @if (auth.user(); as user) {
+    <button matButton [matMenuTriggerFor]="userMenu" class="user-button">
+      <mat-icon>account_circle</mat-icon>
+      <span class="user-name">{{ user.name }}</span>
+    </button>
+    <mat-menu #userMenu="matMenu" xPosition="before">
+      <div class="menu-email" mat-menu-item disabled>{{ user.email }}</div>
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Log out</span>
+      </button>
+    </mat-menu>
+  } @else {
+    <a matButton routerLink="/login">Log in</a>
+    <a matButton routerLink="/register" class="register-link">Register</a>
+  }
+
   <a
     matIconButton
     routerLink="/cart"

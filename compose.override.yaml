@@ -10,6 +10,9 @@ services:
       target: dev
     environment:
       NODE_ENV: development
+      # Dev-only fallbacks so a plain `docker compose up` works without a .env file.
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@example.com}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin-password}
     ports:
       - "${API_PORT:-3000}:3000"
     volumes:

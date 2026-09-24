@@ -3,10 +3,12 @@ import { describe, expect, it } from 'vitest';
 import type { Page, Product } from '@store/shared';
 import { prepareDatabase } from '../src/db/prepare.js';
 import { productModel } from '../src/models/product.js';
-import { useTestApp } from './test-app.js';
+import { TEST_ADMIN, useTestApp } from './test-app.js';
 
 describe('seeding', () => {
-  const ctx = useTestApp({ seed: true });
+  const ctx = useTestApp({ seed: true, admin: TEST_ADMIN });
+  const prepareAgain = (admin = TEST_ADMIN) =>
+    prepareDatabase(ctx.db, { seed: true, admin, bcryptRounds: ctx.config.bcryptRounds });
 
   const productCount = async () => {
     const res = await request(ctx.app).get('/api/products');
@@ -22,17 +24,25 @@ describe('seeding', () => {
     }
   });
 
-  it('does not duplicate products when run again', async () => {
-    await prepareDatabase(ctx.db, { seed: true });
+  it('does not duplicate products or the admin when run again', async () => {
+    await prepareAgain();
 
     expect(await productCount()).toBe(20);
+    expect(await ctx.db.collection('users').countDocuments({ email: TEST_ADMIN.email })).toBe(1);
+  });
+
+  it('does not overwrite an existing admin password', async () => {
+    await prepareAgain({ email: TEST_ADMIN.email, password: 'a-different-password' });
+
+    const res = await request(ctx.app).post('/api/auth/login').send(TEST_ADMIN);
+    expect(res.status).toBe(200);
   });
 
   it('leaves a catalog alone once it has products', async () => {
     await productModel(ctx.db).deleteMany({ category: { $ne: 'books' } });
     const remaining = await productCount();
 
-    await prepareDatabase(ctx.db, { seed: true });
+    await prepareAgain();
 
     expect(await productCount()).toBe(remaining);
   });

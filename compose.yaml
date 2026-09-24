@@ -23,6 +23,12 @@ services:
     environment:
       MONGO_URL: ${MONGO_URL:-mongodb://mongo:27017/store}
       API_PORT: 3000
+      # Required in this mode: the API refuses to start without a strong secret (see .env.example).
+      SESSION_SECRET: ${SESSION_SECRET:-}
+      # This stack serves plain HTTP on localhost; set to true when running behind HTTPS.
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
     depends_on:
       mongo:
         condition: service_healthy
