@@ -1,0 +1,51 @@
+<h1 class="title">Your cart</h1>
+
+@if (cart.isEmpty()) {
+  <section class="empty">
+    <mat-icon class="empty-icon">remove_shopping_cart</mat-icon>
+    <p>Your cart is empty.</p>
+    <a matButton="filled" routerLink="/">Browse the catalog</a>
+  </section>
+} @else {
+  <div class="layout">
+    <ul class="lines">
+      @for (line of cart.lines(); track line.productId) {
+        <li class="line">
+          <a [routerLink]="['/products', line.productId]" class="thumb">
+            <img [src]="line.imageUrl" [alt]="line.name" />
+          </a>
+          <div class="info">
+            <a [routerLink]="['/products', line.productId]" class="name">{{ line.name }}</a>
+            <span class="unit">{{ line.priceCents | price }} each</span>
+          </div>
+          <app-quantity-picker
+            [value]="line.quantity"
+            [label]="'Quantity of ' + line.name"
+            (valueChange)="cart.setQuantity(line.productId, $event)"
+          />
+          <span class="total">{{ line.priceCents * line.quantity | price }}</span>
+          <button
+            matIconButton
+            type="button"
+            [attr.aria-label]="'Remove ' + line.name"
+            (click)="cart.remove(line.productId)"
+          >
+            <mat-icon>delete</mat-icon>
+          </button>
+        </li>
+        <mat-divider />
+      }
+    </ul>
+
+    <aside class="summary">
+      <div class="row">
+        <span>Subtotal ({{ cart.count() }} {{ cart.count() === 1 ? 'item' : 'items' }})</span>
+        <strong>{{ cart.subtotalCents() | price }}</strong>
+      </div>
+      <p class="note">Prices are confirmed at checkout.</p>
+      <!-- Wired to checkout in ticket 06. -->
+      <button matButton="filled" type="button" class="checkout" disabled>Checkout</button>
+      <a matButton routerLink="/">Continue shopping</a>
+    </aside>
+  </div>
+}

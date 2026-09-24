@@ -55,11 +55,7 @@
   } @else {
     <ul class="grid">
       @for (product of result.items; track product.id) {
-        <li>
-          <a class="card-link" [routerLink]="['/products', product.id]">
-            <app-product-card [product]="product" />
-          </a>
-        </li>
+        <li><app-product-card [product]="product" (addToCart)="addToCart.add(product)" /></li>
       }
     </ul>
   }

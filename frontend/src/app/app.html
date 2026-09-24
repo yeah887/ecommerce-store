@@ -1,5 +1,18 @@
 <mat-toolbar class="header">
   <a routerLink="/" class="brand">Store</a>
+  <span class="spacer"></span>
+  <a
+    matIconButton
+    routerLink="/cart"
+    [attr.aria-label]="'Cart, ' + cart.count() + (cart.count() === 1 ? ' item' : ' items')"
+  >
+    <mat-icon
+      [matBadge]="cart.count()"
+      [matBadgeHidden]="cart.count() === 0"
+      aria-hidden="true"
+      >shopping_cart</mat-icon
+    >
+  </a>
 </mat-toolbar>
 
 <main class="content">

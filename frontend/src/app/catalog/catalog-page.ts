@@ -1,7 +1,7 @@
 import { Component, computed, inject, input, linkedSignal } from '@angular/core';
 import { httpResource } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,6 +17,7 @@ import {
   type Page,
   type Product,
 } from '@store/shared';
+import { AddToCart } from '../cart/add-to-cart';
 import { ProductCard } from './product-card';
 
 /** Product grid with search, category filter and pagination, all kept in the URL query. */
@@ -32,13 +33,13 @@ import { ProductCard } from './product-card';
     MatPaginatorModule,
     MatProgressBarModule,
     ProductCard,
-    RouterLink,
   ],
   templateUrl: './catalog-page.html',
   styleUrl: './catalog-page.scss',
 })
 export class CatalogPage {
   private readonly router = inject(Router);
+  protected readonly addToCart = inject(AddToCart);
 
   // Bound from the URL query params (?q=&category=&page=).
   readonly q = input<string>();

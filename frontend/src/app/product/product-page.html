@@ -25,37 +25,8 @@
       <p class="description">{{ p.description }}</p>
 
       <div class="buy">
-        <div class="quantity" role="group" aria-label="Quantity">
-          <button
-            matIconButton
-            type="button"
-            aria-label="Decrease quantity"
-            [disabled]="quantity() <= 1"
-            (click)="setQuantity(quantity() - 1)"
-          >
-            <mat-icon>remove</mat-icon>
-          </button>
-          <input
-            type="number"
-            aria-label="Quantity"
-            min="1"
-            [max]="maxQuantity"
-            [value]="quantity()"
-            (change)="setQuantity($any($event.target).valueAsNumber)"
-          />
-          <button
-            matIconButton
-            type="button"
-            aria-label="Increase quantity"
-            [disabled]="quantity() >= maxQuantity"
-            (click)="setQuantity(quantity() + 1)"
-          >
-            <mat-icon>add</mat-icon>
-          </button>
-        </div>
-
-        <!-- Wired to the cart in ticket 04. -->
-        <button matButton="filled" type="button" class="add" disabled>
+        <app-quantity-picker [value]="quantity()" (valueChange)="quantity.set($event)" />
+        <button matButton="filled" type="button" (click)="addToCart.add(p, quantity())">
           <mat-icon>add_shopping_cart</mat-icon> Add to cart
         </button>
       </div>
