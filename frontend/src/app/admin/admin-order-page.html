@@ -1,0 +1,75 @@
+<div class="progress">
+  @if (order.isLoading() || updating()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+</div>
+
+@if (notFound()) {
+  <app-not-found heading="Order not found" message="This order doesn't exist." />
+} @else if (order.error()) {
+  <p class="message">Couldn't load this order.</p>
+} @else if (order.hasValue()) {
+  @let o = order.value();
+  <a matButton routerLink="/admin/orders" class="back"><mat-icon>arrow_back</mat-icon> Orders</a>
+
+  <header class="head">
+    <div>
+      <h1>Order #{{ o.number }}</h1>
+      <p class="date">Placed on {{ o.createdAt | date: 'medium' }} · Payment {{ o.paymentReference }}</p>
+    </div>
+    <app-status-chip [status]="o.status" />
+  </header>
+
+  <div class="layout">
+    <section class="panel">
+      <h2>Items</h2>
+      <ul class="lines">
+        @for (line of o.lines; track line.productId) {
+          <li>
+            <span class="name">{{ line.name }}</span>
+            <span class="unit">{{ line.quantity }} × {{ line.unitPriceCents | price }}</span>
+            <span class="amount">{{ line.unitPriceCents * line.quantity | price }}</span>
+          </li>
+        }
+      </ul>
+      <mat-divider />
+      <div class="total">
+        <span>Total</span>
+        <strong>{{ o.totalCents | price }}</strong>
+      </div>
+    </section>
+
+    <aside class="panel side">
+      <h2>Customer</h2>
+      @if (o.customer) {
+        <p class="customer">{{ o.customer.name }}<br />{{ o.customer.email }}</p>
+      } @else {
+        <p class="customer">Deleted account</p>
+      }
+
+      <h2>Shipping to</h2>
+      <address>
+        {{ o.shippingAddress.name }}<br />
+        {{ o.shippingAddress.street }}<br />
+        {{ o.shippingAddress.postalCode }} {{ o.shippingAddress.city }}<br />
+        {{ o.shippingAddress.country }}
+      </address>
+
+      @if (actions().length > 0) {
+        <h2>Update status</h2>
+        @for (action of actions(); track action.status) {
+          <button
+            [matButton]="action.status === 'cancelled' ? 'outlined' : 'filled'"
+            type="button"
+            [disabled]="updating()"
+            (click)="setStatus(o, action.status)"
+          >
+            {{ action.label }}
+          </button>
+        }
+      } @else {
+        <p class="hint">This order is {{ o.status }}; its status can no longer change.</p>
+      }
+    </aside>
+  </div>
+}

@@ -2,6 +2,7 @@ import express, { type Express } from 'express';
 import type { Connection } from 'mongoose';
 import type { Config } from './config.js';
 import { errorHandler, notFoundHandler } from './errors.js';
+import { adminOrdersRouter } from './routes/admin-orders.js';
 import { adminProductsRouter } from './routes/admin-products.js';
 import { authRouter } from './routes/auth.js';
 import { categoriesRouter } from './routes/categories.js';
@@ -40,6 +41,7 @@ export function createApp({ db, config, payments = new MockPaymentProvider() }: 
   // Everything under /api/admin, including unknown paths, is admins-only.
   app.use('/api/admin', requireAdmin);
   app.use('/api/admin/products', adminProductsRouter(db));
+  app.use('/api/admin/orders', adminOrdersRouter(db));
 
   app.use('/api', notFoundHandler);
   app.use(errorHandler);

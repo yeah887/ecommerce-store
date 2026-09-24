@@ -1,20 +1,14 @@
-import type { OrderStatus } from '@store/shared';
+import { NEXT_ORDER_STATUSES, type OrderStatus } from '@store/shared';
 import { HttpError } from './errors.js';
 
-/** The order lifecycle: which status may follow which. `delivered` and `cancelled` are final. */
-const NEXT_STATUSES: Record<OrderStatus, readonly OrderStatus[]> = {
-  placed: ['shipped', 'cancelled'],
-  shipped: ['delivered'],
-  delivered: [],
-  cancelled: [],
-};
+// The lifecycle table itself lives in the shared package, so the admin UI offers only allowed changes.
 
 export function allowedNextStatuses(from: OrderStatus): readonly OrderStatus[] {
-  return NEXT_STATUSES[from];
+  return NEXT_ORDER_STATUSES[from];
 }
 
 export function canTransition(from: OrderStatus, to: OrderStatus): boolean {
-  return NEXT_STATUSES[from].includes(to);
+  return NEXT_ORDER_STATUSES[from].includes(to);
 }
 
 /** Throws 409 unless `from → to` is part of the lifecycle. */

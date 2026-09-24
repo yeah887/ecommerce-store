@@ -67,3 +67,35 @@ export interface OrderSummary {
   status: OrderStatus;
   createdAt: string;
 }
+
+/** The order lifecycle: which status may follow which. `delivered` and `cancelled` are final. */
+export const NEXT_ORDER_STATUSES: Record<OrderStatus, readonly OrderStatus[]> = {
+  placed: ['shipped', 'cancelled'],
+  shipped: ['delivered'],
+  delivered: [],
+  cancelled: [],
+};
+
+export function isOrderStatus(value: unknown): value is OrderStatus {
+  return typeof value === 'string' && (ORDER_STATUSES as readonly string[]).includes(value);
+}
+
+/** The customer behind an order, or null if their account no longer exists. */
+export interface OrderCustomer {
+  id: string;
+  name: string;
+  email: string;
+}
+
+export interface AdminOrderSummary extends OrderSummary {
+  customer: OrderCustomer | null;
+}
+
+export interface AdminOrder extends Order {
+  customer: OrderCustomer | null;
+}
+
+/** Body of `PATCH /api/admin/orders/:id/status`. */
+export interface UpdateOrderStatusRequest {
+  status: OrderStatus;
+}

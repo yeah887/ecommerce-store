@@ -43,6 +43,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     canActivate: [adminGuard],
+    loadComponent: () => import('./admin/admin-layout').then((m) => m.AdminLayout),
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'products' },
       {
@@ -59,6 +60,16 @@ export const routes: Routes = [
         path: 'products/:id/edit',
         title: 'Edit product · Admin · Store',
         loadComponent: () => import('./admin/product-form-page').then((m) => m.ProductFormPage),
+      },
+      {
+        path: 'orders',
+        title: 'Orders · Admin · Store',
+        loadComponent: () => import('./admin/admin-orders-page').then((m) => m.AdminOrdersPage),
+      },
+      {
+        path: 'orders/:id',
+        title: 'Order · Admin · Store',
+        loadComponent: () => import('./admin/admin-order-page').then((m) => m.AdminOrderPage),
       },
     ],
   },
