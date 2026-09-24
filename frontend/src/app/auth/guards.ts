@@ -14,3 +14,12 @@ export const loggedInGuard: CanActivateFn = (_route, state) => {
   if (inject(AuthService).isLoggedIn()) return true;
   return inject(Router).createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
 };
+
+/** Admin pages: visitors log in first; logged-in customers are sent home. */
+export const adminGuard: CanActivateFn = (_route, state) => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  if (auth.isAdmin()) return true;
+  if (!auth.isLoggedIn()) return router.createUrlTree(['/login'], { queryParams: { returnUrl: state.url } });
+  return router.parseUrl('/');
+};

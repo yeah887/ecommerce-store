@@ -1,0 +1,81 @@
+<header class="head">
+  <h1>Products</h1>
+  <a matButton="filled" routerLink="/admin/products/new"><mat-icon>add</mat-icon> New product</a>
+</header>
+
+<form class="search" (ngSubmit)="search()">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-icon matPrefix>search</mat-icon>
+    <input
+      matInput
+      name="q"
+      type="search"
+      placeholder="Search products"
+      aria-label="Search products"
+      [ngModel]="searchText()"
+      (ngModelChange)="searchText.set($event)"
+    />
+  </mat-form-field>
+  <button matButton type="submit">Search</button>
+</form>
+
+<div class="progress">
+  @if (products.isLoading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+</div>
+
+@if (products.error()) {
+  <p class="message">Couldn't load products.</p>
+} @else if (products.hasValue()) {
+  @let result = products.value();
+  @if (result.items.length === 0) {
+    <p class="message">No products found.</p>
+  } @else {
+    <div class="table-wrap">
+      <table mat-table [dataSource]="result.items">
+        <ng-container matColumnDef="image">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let p"><img class="thumb" [src]="p.imageUrl" alt="" loading="lazy" /></td>
+        </ng-container>
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let p">
+            <a [routerLink]="['/products', p.id]">{{ p.name }}</a>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="category">
+          <th mat-header-cell *matHeaderCellDef>Category</th>
+          <td mat-cell *matCellDef="let p">{{ categoryLabel(p) }}</td>
+        </ng-container>
+        <ng-container matColumnDef="price">
+          <th mat-header-cell *matHeaderCellDef class="num">Price</th>
+          <td mat-cell *matCellDef="let p" class="num">{{ p.priceCents | price }}</td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let p" class="actions">
+            <a matIconButton [routerLink]="['/admin/products', p.id, 'edit']" [attr.aria-label]="'Edit ' + p.name">
+              <mat-icon>edit</mat-icon>
+            </a>
+            <button matIconButton type="button" [attr.aria-label]="'Delete ' + p.name" (click)="remove(p)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="columns"></tr>
+        <tr mat-row *matRowDef="let row; columns: columns"></tr>
+      </table>
+    </div>
+
+    <mat-paginator
+      [length]="result.total"
+      [pageIndex]="result.page - 1"
+      [pageSize]="pageSize"
+      [hidePageSize]="true"
+      (page)="changePage($event)"
+      aria-label="Product pages"
+    />
+  }
+}

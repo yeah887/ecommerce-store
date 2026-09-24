@@ -74,6 +74,17 @@ export const requireAuth: RequestHandler = (req, _res, next) => {
   next();
 };
 
+/** 401 when not logged in, 403 for logged-in users who aren't admins. */
+export const requireAdmin: RequestHandler = (req, _res, next) => {
+  if (!req.user) {
+    throw new HttpError(401, 'not_authenticated', 'Please log in');
+  }
+  if (req.user.role !== 'admin') {
+    throw new HttpError(403, 'forbidden', 'This area is for admins only');
+  }
+  next();
+};
+
 /** Starts a fresh session for the user, so a session ID set before login can't be reused. */
 export function logIn(req: Request, user: UserDocument): Promise<void> {
   return new Promise((resolve, reject) => {

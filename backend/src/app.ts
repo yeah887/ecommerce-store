@@ -2,13 +2,14 @@ import express, { type Express } from 'express';
 import type { Connection } from 'mongoose';
 import type { Config } from './config.js';
 import { errorHandler, notFoundHandler } from './errors.js';
+import { adminProductsRouter } from './routes/admin-products.js';
 import { authRouter } from './routes/auth.js';
 import { categoriesRouter } from './routes/categories.js';
 import { healthRouter } from './routes/health.js';
 import { ordersRouter } from './routes/orders.js';
 import { productsRouter } from './routes/products.js';
 import { MockPaymentProvider, type PaymentProvider } from './payments.js';
-import { currentUser, sessionMiddleware } from './session.js';
+import { currentUser, requireAdmin, sessionMiddleware } from './session.js';
 
 export interface AppDeps {
   db: Connection;
@@ -35,6 +36,10 @@ export function createApp({ db, config, payments = new MockPaymentProvider() }: 
   app.use('/api/categories', categoriesRouter());
   app.use('/api/auth', authRouter(db, config));
   app.use('/api/orders', ordersRouter(db, payments));
+
+  // Everything under /api/admin, including unknown paths, is admins-only.
+  app.use('/api/admin', requireAdmin);
+  app.use('/api/admin/products', adminProductsRouter(db));
 
   app.use('/api', notFoundHandler);
   app.use(errorHandler);

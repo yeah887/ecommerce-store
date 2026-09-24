@@ -13,6 +13,12 @@
         <mat-icon>receipt_long</mat-icon>
         <span>My orders</span>
       </a>
+      @if (auth.isAdmin()) {
+        <a mat-menu-item routerLink="/admin/products">
+          <mat-icon>inventory_2</mat-icon>
+          <span>Manage products</span>
+        </a>
+      }
       <button mat-menu-item (click)="logout()">
         <mat-icon>logout</mat-icon>
         <span>Log out</span>

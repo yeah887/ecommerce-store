@@ -1,0 +1,67 @@
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  h1 {
+    font: var(--mat-sys-headline-medium);
+    margin: 0;
+  }
+}
+
+.search {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 16px 0;
+
+  mat-form-field {
+    flex: 1;
+    max-width: 420px;
+  }
+}
+
+.progress {
+  height: 4px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.thumb {
+  display: block;
+  width: 64px;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  border-radius: 6px;
+  background: var(--mat-sys-surface-container);
+}
+
+.num {
+  text-align: right;
+}
+
+.actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+td a {
+  color: inherit;
+}
+
+.message {
+  padding: 48px 0;
+  text-align: center;
+}
+
+.mat-column-image {
+  width: 80px;
+}
+
+.mat-column-actions {
+  width: 112px;
+  overflow: visible;
+}

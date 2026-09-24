@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { guestOnlyGuard, loggedInGuard } from './auth/guards';
+import { adminGuard, guestOnlyGuard, loggedInGuard } from './auth/guards';
 
 export const routes: Routes = [
   {
@@ -39,6 +39,28 @@ export const routes: Routes = [
     title: 'Order · Store',
     canActivate: [loggedInGuard],
     loadComponent: () => import('./orders/order-page').then((m) => m.OrderPage),
+  },
+  {
+    path: 'admin',
+    canActivate: [adminGuard],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'products' },
+      {
+        path: 'products',
+        title: 'Products · Admin · Store',
+        loadComponent: () => import('./admin/admin-products-page').then((m) => m.AdminProductsPage),
+      },
+      {
+        path: 'products/new',
+        title: 'New product · Admin · Store',
+        loadComponent: () => import('./admin/product-form-page').then((m) => m.ProductFormPage),
+      },
+      {
+        path: 'products/:id/edit',
+        title: 'Edit product · Admin · Store',
+        loadComponent: () => import('./admin/product-form-page').then((m) => m.ProductFormPage),
+      },
+    ],
   },
   {
     path: 'login',
