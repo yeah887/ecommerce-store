@@ -29,6 +29,18 @@ export const routes: Routes = [
     loadComponent: () => import('./checkout/confirmation-page').then((m) => m.ConfirmationPage),
   },
   {
+    path: 'orders',
+    title: 'My orders · Store',
+    canActivate: [loggedInGuard],
+    loadComponent: () => import('./orders/orders-page').then((m) => m.OrdersPage),
+  },
+  {
+    path: 'orders/:id',
+    title: 'Order · Store',
+    canActivate: [loggedInGuard],
+    loadComponent: () => import('./orders/order-page').then((m) => m.OrderPage),
+  },
+  {
     path: 'login',
     title: 'Log in · Store',
     canActivate: [guestOnlyGuard],

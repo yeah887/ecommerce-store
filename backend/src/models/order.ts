@@ -1,5 +1,5 @@
 import { Schema, Types, type Connection, type HydratedDocument, type InferSchemaType, type Model } from 'mongoose';
-import { ORDER_STATUSES, orderNumber, type Order } from '@store/shared';
+import { ORDER_STATUSES, orderNumber, type Order, type OrderSummary } from '@store/shared';
 
 const orderLineSchema = new Schema(
   {
@@ -69,5 +69,17 @@ export function toOrder(order: OrderDocument): Order {
     paymentReference: order.paymentReference,
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),
+  };
+}
+
+export function toOrderSummary(order: OrderDocument): OrderSummary {
+  const id = order.id as string;
+  return {
+    id,
+    number: orderNumber(id),
+    itemCount: order.lines.reduce((sum, line) => sum + line.quantity, 0),
+    totalCents: order.totalCents,
+    status: order.status,
+    createdAt: order.createdAt.toISOString(),
   };
 }

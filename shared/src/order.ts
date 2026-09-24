@@ -50,3 +50,20 @@ export const MAX_ORDER_LINES = 100;
 export function orderNumber(orderId: string): string {
   return orderId.slice(-8).toUpperCase();
 }
+
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  placed: 'Placed',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
+};
+
+/** A row in an order list: everything but the lines' details and the address. */
+export interface OrderSummary {
+  id: string;
+  number: string;
+  itemCount: number;
+  totalCents: number;
+  status: OrderStatus;
+  createdAt: string;
+}

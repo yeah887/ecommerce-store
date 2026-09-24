@@ -1,0 +1,59 @@
+<div class="progress">
+  @if (order.isLoading() || cancelling()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+</div>
+
+@if (notFound()) {
+  <app-not-found heading="Order not found" message="This order doesn't exist or isn't yours." />
+} @else if (order.error()) {
+  <p class="message">Couldn't load this order. Please try again.</p>
+} @else if (order.hasValue()) {
+  @let o = order.value();
+  <a matButton routerLink="/orders" class="back"><mat-icon>arrow_back</mat-icon> My orders</a>
+
+  <header class="head">
+    <div>
+      <h1>Order #{{ o.number }}</h1>
+      <p class="date">Placed on {{ o.createdAt | date: 'medium' }}</p>
+    </div>
+    <app-status-chip [status]="o.status" />
+  </header>
+
+  <div class="layout">
+    <section class="panel">
+      <h2>Items</h2>
+      <ul class="lines">
+        @for (line of o.lines; track line.productId) {
+          <li>
+            <a [routerLink]="['/products', line.productId]" class="name">{{ line.name }}</a>
+            <span class="unit">{{ line.quantity }} × {{ line.unitPriceCents | price }}</span>
+            <span class="amount">{{ line.unitPriceCents * line.quantity | price }}</span>
+          </li>
+        }
+      </ul>
+      <mat-divider />
+      <div class="total">
+        <span>Total</span>
+        <strong>{{ o.totalCents | price }}</strong>
+      </div>
+    </section>
+
+    <aside class="panel side">
+      <h2>Shipping to</h2>
+      <address>
+        {{ o.shippingAddress.name }}<br />
+        {{ o.shippingAddress.street }}<br />
+        {{ o.shippingAddress.postalCode }} {{ o.shippingAddress.city }}<br />
+        {{ o.shippingAddress.country }}
+      </address>
+
+      @if (o.status === 'placed') {
+        <button matButton="outlined" type="button" [disabled]="cancelling()" (click)="cancel(o)">
+          Cancel order
+        </button>
+        <p class="hint">You can cancel until the order ships.</p>
+      }
+    </aside>
+  </div>
+}

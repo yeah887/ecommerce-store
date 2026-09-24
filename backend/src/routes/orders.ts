@@ -1,15 +1,17 @@
 import { Router } from 'express';
-import { isValidObjectId, type Connection } from 'mongoose';
+import { isValidObjectId, type Connection, type Types } from 'mongoose';
 import {
   CURRENCY,
   MAX_ORDER_LINES,
   MAX_QUANTITY,
   SHIPPING_FIELD_MAX_LENGTH,
   type Order,
+  type OrderSummary,
   type ShippingAddress,
 } from '@store/shared';
 import { HttpError } from '../errors.js';
-import { orderModel, toOrder } from '../models/order.js';
+import { orderModel, toOrder, toOrderSummary } from '../models/order.js';
+import { assertTransition } from '../order-status.js';
 import { productModel, type ProductDoc } from '../models/product.js';
 import { PaymentDeclinedError, type PaymentProvider } from '../payments.js';
 import { requireAuth } from '../session.js';
@@ -28,6 +30,40 @@ export function ordersRouter(db: Connection, payments: PaymentProvider): Router 
   const products = productModel(db);
 
   router.use(requireAuth);
+
+  /** The current user's order, or 404 whether it doesn't exist or belongs to someone else. */
+  async function findOwnOrder(id: string, ownerId: Types.ObjectId) {
+    const order = isValidObjectId(id) ? await orders.findOne({ _id: id, owner: ownerId }) : null;
+    if (!order) throw new HttpError(404, 'order_not_found', 'Order not found');
+    return order;
+  }
+
+  router.get('/', async (req, res) => {
+    const docs = await orders.find({ owner: req.user!._id }).sort({ createdAt: -1, _id: -1 });
+    const body: OrderSummary[] = docs.map(toOrderSummary);
+    res.json(body);
+  });
+
+  router.get('/:id', async (req, res) => {
+    const body: Order = toOrder(await findOwnOrder(req.params.id, req.user!._id));
+    res.json(body);
+  });
+
+  router.post('/:id/cancel', async (req, res) => {
+    const order = await findOwnOrder(req.params.id, req.user!._id);
+    assertTransition(order.status, 'cancelled');
+
+    // Only succeeds if nobody changed the status since we read it (e.g. an admin shipping it).
+    const updated = await orders.findOneAndUpdate(
+      { _id: order._id, status: order.status },
+      { status: 'cancelled' },
+      { new: true },
+    );
+    if (!updated) throw new HttpError(409, 'invalid_status_transition', 'The order changed; please reload it');
+
+    const body: Order = toOrder(updated);
+    res.json(body);
+  });
 
   router.post('/', async (req, res) => {
     const body = req.body ?? {};

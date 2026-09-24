@@ -9,6 +9,10 @@
     </button>
     <mat-menu #userMenu="matMenu" xPosition="before">
       <div class="menu-email" mat-menu-item disabled>{{ user.email }}</div>
+      <a mat-menu-item routerLink="/orders">
+        <mat-icon>receipt_long</mat-icon>
+        <span>My orders</span>
+      </a>
       <button mat-menu-item (click)="logout()">
         <mat-icon>logout</mat-icon>
         <span>Log out</span>

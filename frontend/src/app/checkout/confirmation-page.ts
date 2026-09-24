@@ -23,7 +23,10 @@ import { PricePipe } from '../shared/price.pipe';
         </p>
       }
 
-      <a matButton="filled" routerLink="/">Continue shopping</a>
+      <div class="actions">
+        <a matButton="outlined" [routerLink]="['/orders', id()]">View order</a>
+        <a matButton="filled" routerLink="/">Continue shopping</a>
+      </div>
     </section>
   `,
   styles: `
@@ -41,6 +44,11 @@ import { PricePipe } from '../shared/price.pipe';
     }
     h1 {
       font: var(--mat-sys-headline-medium);
+    }
+    .actions {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
     }
     .number strong {
       font-family: monospace;
