@@ -1,0 +1,87 @@
+<h1 class="title">Checkout</h1>
+
+@if (cart.isEmpty()) {
+  <section class="empty">
+    <p>Your cart is empty, so there's nothing to check out.</p>
+    <a matButton="filled" routerLink="/">Browse the catalog</a>
+  </section>
+} @else {
+  <form class="layout" [formGroup]="form" (ngSubmit)="placeOrder()" novalidate>
+    <section class="panel">
+      <h2>Shipping address</h2>
+      <div class="fields">
+        @for (field of addressFields; track field.key) {
+          <mat-form-field appearance="outline" [class]="'field-' + field.key">
+            <mat-label>{{ field.label }}</mat-label>
+            <input
+              matInput
+              [formControlName]="field.key"
+              [name]="field.key"
+              [attr.autocomplete]="field.autocomplete"
+            />
+            @let control = form.controls[field.key];
+            @if (control.hasError('required')) {
+              <mat-error>{{ field.label }} is required</mat-error>
+            } @else if (control.hasError('maxlength')) {
+              <mat-error>Too long</mat-error>
+            } @else if (control.hasError('server')) {
+              <mat-error>{{ control.getError('server') }}</mat-error>
+            }
+          </mat-form-field>
+        }
+      </div>
+
+      <h2>Payment</h2>
+      <div class="demo-payment">
+        <mat-icon>credit_card</mat-icon>
+        <p>
+          This is a demo store: payment is simulated and always succeeds. No card details are needed and
+          no money is charged.
+        </p>
+      </div>
+    </section>
+
+    <aside class="panel summary">
+      <h2>Order summary</h2>
+      <ul class="lines">
+        @for (line of cart.lines(); track line.productId) {
+          <li>
+            <span class="qty">{{ line.quantity }} ×</span>
+            <span class="name">{{ line.name }}</span>
+            <span class="amount">{{ line.priceCents * line.quantity | price }}</span>
+          </li>
+        }
+      </ul>
+      <mat-divider />
+      <div class="total">
+        <span>Total</span>
+        <strong>{{ cart.subtotalCents() | price }}</strong>
+      </div>
+      <p class="note">The final price is confirmed from current prices when you place the order.</p>
+
+      @if (visibleError(); as message) {
+        <div class="form-error" role="alert">
+          <p>{{ message }}</p>
+          @if (stillRejected().length > 0) {
+            <ul>
+              @for (item of stillRejected(); track item.line.productId) {
+                <li>
+                  <span><strong>{{ item.line.name }}</strong>: {{ item.reason }}</span>
+                  <button matButton type="button" (click)="cart.remove(item.line.productId)">Remove</button>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+      }
+
+      <button matButton="filled" type="submit" class="place" [disabled]="placing()">
+        Pay and place order
+      </button>
+      <a matButton routerLink="/cart">Back to cart</a>
+      @if (placing()) {
+        <mat-progress-bar mode="indeterminate" />
+      }
+    </aside>
+  </form>
+}

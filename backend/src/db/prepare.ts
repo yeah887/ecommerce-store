@@ -1,5 +1,6 @@
 import type { Connection } from 'mongoose';
 import type { AdminSeed } from '../config.js';
+import { orderModel } from '../models/order.js';
 import { productModel } from '../models/product.js';
 import { userModel } from '../models/user.js';
 import { hashPassword } from '../passwords.js';
@@ -27,6 +28,7 @@ export async function prepareDatabase(
   await Promise.all([
     products.init(),
     users.init(),
+    orderModel(db).init(),
     // MongoDB deletes sessions once their `expires` date has passed.
     db.collection(SESSIONS_COLLECTION).createIndex({ expires: 1 }, { expireAfterSeconds: 0 }),
   ]);

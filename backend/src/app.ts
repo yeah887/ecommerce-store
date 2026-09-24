@@ -5,19 +5,22 @@ import { errorHandler, notFoundHandler } from './errors.js';
 import { authRouter } from './routes/auth.js';
 import { categoriesRouter } from './routes/categories.js';
 import { healthRouter } from './routes/health.js';
+import { ordersRouter } from './routes/orders.js';
 import { productsRouter } from './routes/products.js';
+import { MockPaymentProvider, type PaymentProvider } from './payments.js';
 import { currentUser, sessionMiddleware } from './session.js';
 
 export interface AppDeps {
   db: Connection;
   config: Config;
+  payments?: PaymentProvider;
 }
 
 /**
  * Builds the Express app from its dependencies. Does not connect or listen,
  * so tests can build it against an in-memory database.
  */
-export function createApp({ db, config }: AppDeps): Express {
+export function createApp({ db, config, payments = new MockPaymentProvider() }: AppDeps): Express {
   const app = express();
 
   app.disable('x-powered-by');
@@ -31,6 +34,7 @@ export function createApp({ db, config }: AppDeps): Express {
   app.use('/api/products', productsRouter(db));
   app.use('/api/categories', categoriesRouter());
   app.use('/api/auth', authRouter(db, config));
+  app.use('/api/orders', ordersRouter(db, payments));
 
   app.use('/api', notFoundHandler);
   app.use(errorHandler);

@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { guestOnlyGuard } from './auth/guards';
+import { guestOnlyGuard, loggedInGuard } from './auth/guards';
 
 export const routes: Routes = [
   {
@@ -15,6 +15,18 @@ export const routes: Routes = [
     path: 'cart',
     title: 'Your cart · Store',
     loadComponent: () => import('./cart/cart-page').then((m) => m.CartPage),
+  },
+  {
+    path: 'checkout',
+    title: 'Checkout · Store',
+    canActivate: [loggedInGuard],
+    loadComponent: () => import('./checkout/checkout-page').then((m) => m.CheckoutPage),
+  },
+  {
+    path: 'checkout/confirmation/:id',
+    title: 'Order placed · Store',
+    canActivate: [loggedInGuard],
+    loadComponent: () => import('./checkout/confirmation-page').then((m) => m.ConfirmationPage),
   },
   {
     path: 'login',

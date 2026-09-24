@@ -43,8 +43,7 @@
         <strong>{{ cart.subtotalCents() | price }}</strong>
       </div>
       <p class="note">Prices are confirmed at checkout.</p>
-      <!-- Wired to checkout in ticket 06. -->
-      <button matButton="filled" type="button" class="checkout" disabled>Checkout</button>
+      <a matButton="filled" routerLink="/checkout" class="checkout">Checkout</a>
       <a matButton routerLink="/">Continue shopping</a>
     </aside>
   </div>

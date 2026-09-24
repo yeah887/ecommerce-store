@@ -3,5 +3,6 @@ export * from './auth.js';
 export * from './cart.js';
 export * from './categories.js';
 export * from './health.js';
+export * from './order.js';
 export * from './pagination.js';
 export * from './product.js';

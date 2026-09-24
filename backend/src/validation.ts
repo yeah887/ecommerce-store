@@ -8,9 +8,9 @@ export class FieldErrors {
     this.fields[field] ??= message;
   }
 
-  throwIfAny(): void {
+  throwIfAny(code = 'validation_failed', message = 'Some fields are invalid'): void {
     if (Object.keys(this.fields).length > 0) {
-      throw new HttpError(400, 'validation_failed', 'Some fields are invalid', this.fields);
+      throw new HttpError(400, code, message, this.fields);
     }
   }
 }

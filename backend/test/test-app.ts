@@ -5,6 +5,7 @@ import { afterAll, beforeAll } from 'vitest';
 import { createApp } from '../src/app.js';
 import type { AdminSeed, Config } from '../src/config.js';
 import { prepareDatabase } from '../src/db/prepare.js';
+import type { PaymentProvider } from '../src/payments.js';
 
 export interface TestContext {
   app: Express;
@@ -17,6 +18,8 @@ export interface TestAppOptions {
   seed?: boolean;
   admin?: AdminSeed;
   config?: Partial<Config>;
+  /** Defaults to the app's own mock provider. */
+  payments?: PaymentProvider;
 }
 
 export const TEST_ADMIN: AdminSeed = { email: 'admin@example.com', password: 'admin-password' };
@@ -25,7 +28,7 @@ export const TEST_ADMIN: AdminSeed = { email: 'admin@example.com', password: 'ad
  * Starts a fresh in-memory MongoDB for the calling test file, prepares it like the server does,
  * and builds the app against it. Read the returned object's properties inside tests, not at module load.
  */
-export function useTestApp({ seed = false, admin, config }: TestAppOptions = {}): TestContext {
+export function useTestApp({ seed = false, admin, config, payments }: TestAppOptions = {}): TestContext {
   const ctx = {} as TestContext;
   let mongo: MongoMemoryServer;
 
@@ -44,7 +47,7 @@ export function useTestApp({ seed = false, admin, config }: TestAppOptions = {})
     };
     ctx.db = await mongoose.createConnection(mongo.getUri()).asPromise();
     await prepareDatabase(ctx.db, { seed, admin, bcryptRounds: ctx.config.bcryptRounds });
-    ctx.app = createApp({ db: ctx.db, config: ctx.config });
+    ctx.app = createApp({ db: ctx.db, config: ctx.config, payments });
   });
 
   afterAll(async () => {
