@@ -187,7 +187,7 @@ The whole stack comes up with `docker compose up`. The default is a development 
 - `compose.yaml` (production-like) runs three services:
   - **web**: a multi-stage build that compiles Angular, then nginx serves the static files with SPA fallback and proxies `/api` to the API service.
   - **api**: a multi-stage build that compiles TypeScript and runs on `node:22-alpine`.
-  - **mongo**: the official MongoDB image with a named volume.
+  - **mongo**: the official MongoDB image (7.0, because 8.x fails on Linux kernel 6.19+; see ticket 01) with a named volume.
 - Health checks: `api` waits for a healthy `mongo`, and `web` waits for `api`.
 - `compose.override.yaml` (development, applied automatically) runs the Angular dev server and the API in watch mode, bind-mounts the source, keeps `node_modules` inside the container, and exposes the dev ports.
 - The production-like stack runs with `docker compose -f compose.yaml up --build`.

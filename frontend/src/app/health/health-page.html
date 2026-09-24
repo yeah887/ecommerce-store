@@ -1,0 +1,24 @@
+<mat-card appearance="outlined" class="health">
+  <mat-card-header>
+    <mat-card-title>System status</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @switch (view()) {
+      @case ('loading') {
+        <mat-spinner diameter="32" />
+      }
+      @case ('healthy') {
+        <p class="status ok"><mat-icon>check_circle</mat-icon> API healthy, database connected</p>
+      }
+      @case ('degraded') {
+        <p class="status bad"><mat-icon>warning</mat-icon> API up, but the database is unreachable</p>
+      }
+      @case ('unreachable') {
+        <p class="status bad"><mat-icon>error</mat-icon> API unreachable</p>
+      }
+    }
+  </mat-card-content>
+  <mat-card-actions>
+    <button matButton (click)="health.reload()">Check again</button>
+  </mat-card-actions>
+</mat-card>

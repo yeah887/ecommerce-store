@@ -1,0 +1,28 @@
+# Dev mode, applied automatically by `docker compose up`:
+# Angular dev server and API in watch mode, with source bind-mounted for hot reload.
+services:
+  mongo:
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+
+  api:
+    build:
+      target: dev
+    environment:
+      NODE_ENV: development
+    ports:
+      - "${API_PORT:-3000}:3000"
+    volumes:
+      - ./backend/src:/app/backend/src
+      - ./backend/test:/app/backend/test
+      - ./shared/src:/app/shared/src
+
+  web:
+    build:
+      target: dev
+    ports: !override
+      - "${WEB_DEV_PORT:-4200}:4200"
+    volumes:
+      - ./frontend/src:/app/frontend/src
+      - ./frontend/public:/app/frontend/public
+      - ./shared/src:/app/shared/src
