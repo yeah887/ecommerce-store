@@ -31,6 +31,24 @@
   gap: 16px;
 }
 
+.image-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  // Room for the field's hint above the actions.
+  margin-bottom: 12px;
+
+  mat-form-field {
+    flex: 1;
+    min-width: 0;
+  }
+
+  // Line the button up with the outlined field (56px tall).
+  button {
+    margin-top: 10px;
+  }
+}
+
 .actions {
   display: flex;
   gap: 8px;

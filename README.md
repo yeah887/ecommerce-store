@@ -23,6 +23,7 @@ A full-stack e-commerce store built as a learning and portfolio project. Nothing
 - **Order history:** customers see their orders and can cancel one until it ships.
 - **Admin:**
   - Create, edit and delete products, with prices entered in euros.
+  - Upload product pictures (JPEG, PNG, WebP or GIF, up to 5 MB), or paste a link to an image hosted elsewhere. Uploads are stored in MongoDB (GridFS) and deleted once no product uses them.
   - See every order, filter by status, and move orders through the lifecycle:
 
     ```
@@ -103,6 +104,7 @@ npm test -w frontend     # Angular unit tests
   - checkout price recalculation and validation
   - order privacy and the status lifecycle
   - admin authorization
+  - image upload, type detection and cleanup
   - seeding
 - **Frontend:** unit tests for the cart store, euro-to-cents parsing and the post-login redirect check.
 
@@ -118,6 +120,7 @@ The first backend run downloads a MongoDB binary (about 180 MB unpacked) into `~
 │   │   ├── server.ts       entry point: connect, prepare the database, listen
 │   │   ├── db/             indexes and safe-to-repeat seeding
 │   │   ├── models/         Mongoose models (User, Product, Order)
+│   │   ├── images.ts       uploaded images in GridFS, and file type detection
 │   │   ├── routes/         one router per resource
 │   │   ├── session.ts      sessions, currentUser, requireAuth, requireAdmin
 │   │   ├── order-status.ts order lifecycle rules
@@ -143,16 +146,19 @@ Every route is under `/api`. Errors always have the shape `{ "error": { "code", 
 | POST | `/orders` | logged in | Place an order: `{ lines: [{ productId, quantity }], shippingAddress }` |
 | GET | `/orders`, `/orders/:id` | logged in | Your own orders |
 | POST | `/orders/:id/cancel` | logged in | Cancel your order while it is placed |
-| POST, PUT, DELETE | `/admin/products[/:id]` | admin | Manage products |
+| GET | `/images/:id` | anyone | An uploaded image |
+| POST, PUT, DELETE | `/admin/products[/:id]` | admin | Manage products. `imageUrl` is an http(s) URL or an uploaded image's `/api/images/:id` |
+| POST | `/admin/images` | admin | Upload an image: the raw file as the body. Returns `{ url }` |
 | GET | `/admin/orders?status=&page=`, `/admin/orders/:id` | admin | All orders |
 | PATCH | `/admin/orders/:id/status` | admin | Change status: `{ status }` |
 
 ## Notes
 
 - **MongoDB 7, not 8:** MongoDB 8.x refuses to start on Linux kernel 6.19 and newer ([SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)). The backend tests pin mongodb-memory-server to the same 7.0 line.
-- **Sample images** come from picsum.photos: random photos, not pictures of the products. They need internet access.
+- **Sample images** come from picsum.photos: random photos, not pictures of the products. They need internet access. Uploaded images are served by the API itself.
+- **Uploaded images are checked by their content:** the server detects the type from the file's first bytes and ignores the type the browser claims. SVG is not accepted, because it can contain scripts.
 - **Out of scope for this version:**
   - real payments, taxes and shipping costs
-  - inventory, reviews, guest checkout and image uploads
+  - inventory, reviews and guest checkout
   - emails and password reset
   - server-side rendering and end-to-end browser tests

@@ -19,10 +19,13 @@ import { firstValueFrom } from 'rxjs';
 import {
   CATEGORIES,
   CATEGORY_LABELS,
+  IMAGE_UPLOAD,
   PRODUCT_LIMITS,
+  isProductImageUrl,
   type Category,
   type Product,
   type ProductInput,
+  type UploadedImage,
 } from '@store/shared';
 import { NotFound } from '../not-found/not-found';
 import { apiError } from '../shared/api-error';
@@ -38,14 +41,9 @@ function euroPrice(control: AbstractControl<string>): ValidationErrors | null {
   return null;
 }
 
-function httpUrl(control: AbstractControl<string>): ValidationErrors | null {
+function productImageUrl(control: AbstractControl<string>): ValidationErrors | null {
   if (!control.value) return null;
-  try {
-    const url = new URL(control.value.trim());
-    return url.protocol === 'http:' || url.protocol === 'https:' ? null : { url: true };
-  } catch {
-    return { url: true };
-  }
+  return isProductImageUrl(control.value.trim()) ? null : { url: true };
 }
 
 /** Create (`/admin/products/new`) or edit (`/admin/products/:id/edit`) a product. */
@@ -76,17 +74,19 @@ export class ProductFormPage implements OnInit {
   protected readonly categories = CATEGORIES;
   protected readonly categoryLabels = CATEGORY_LABELS;
   protected readonly limits = PRODUCT_LIMITS;
+  protected readonly imageTypes = IMAGE_UPLOAD.types.join(',');
 
   protected readonly form = inject(FormBuilder).nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(PRODUCT_LIMITS.nameMaxLength)]],
     description: ['', [Validators.required, Validators.maxLength(PRODUCT_LIMITS.descriptionMaxLength)]],
     price: ['', [Validators.required, euroPrice]],
     category: ['' as Category | '', Validators.required],
-    imageUrl: ['', [Validators.required, Validators.maxLength(PRODUCT_LIMITS.imageUrlMaxLength), httpUrl]],
+    imageUrl: ['', [Validators.required, Validators.maxLength(PRODUCT_LIMITS.imageUrlMaxLength), productImageUrl]],
   });
 
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
+  protected readonly uploading = signal(false);
   protected readonly notFound = signal(false);
   protected readonly error = signal<string | null>(null);
 
@@ -108,6 +108,40 @@ export class ProductFormPage implements OnInit {
       else this.error.set("Couldn't load the product.");
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  /** Uploads the chosen file and puts its URL into the image field. */
+  protected async upload(event: Event): Promise<void> {
+    const fileInput = event.target as HTMLInputElement;
+    const file = fileInput.files?.[0];
+    // Clear the input so choosing the same file again still triggers a change.
+    fileInput.value = '';
+    if (!file) return;
+
+    const control = this.form.controls.imageUrl;
+    const fail = (message: string) => {
+      control.setErrors({ server: message });
+      control.markAsTouched();
+    };
+    if (!(IMAGE_UPLOAD.types as readonly string[]).includes(file.type)) {
+      return fail('Choose a JPEG, PNG, WebP or GIF image');
+    }
+    if (file.size > IMAGE_UPLOAD.maxBytes) {
+      return fail(`The image must be at most ${IMAGE_UPLOAD.maxBytes / 1024 / 1024} MB`);
+    }
+
+    this.uploading.set(true);
+    try {
+      const uploaded = await firstValueFrom(
+        this.http.post<UploadedImage>('/api/admin/images', file, { headers: { 'Content-Type': file.type } }),
+      );
+      control.setValue(uploaded.url);
+      control.markAsDirty();
+    } catch (err) {
+      fail(apiError(err)?.message ?? "Couldn't upload the image.");
+    } finally {
+      this.uploading.set(false);
     }
   }
 

@@ -116,6 +116,7 @@ describe('admin product management', () => {
     [{ category: 'weapons' }, 'category'],
     [{ imageUrl: 'not a url' }, 'imageUrl'],
     [{ imageUrl: 'javascript:alert(1)' }, 'imageUrl'],
+    [{ imageUrl: '/api/images/not-an-id' }, 'imageUrl'],
   ])('rejects invalid input %o', async (change, field) => {
     const create = await admin.post('/api/admin/products').send({ ...lamp, ...change });
     const update = await admin.put(`/api/admin/products/${existingId}`).send({ ...lamp, ...change });

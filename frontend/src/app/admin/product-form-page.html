@@ -5,7 +5,7 @@
   <h1 class="title">{{ id() ? 'Edit product' : 'New product' }}</h1>
 
   <div class="progress">
-    @if (loading() || saving()) {
+    @if (loading() || saving() || uploading()) {
       <mat-progress-bar mode="indeterminate" />
     }
   </div>
@@ -69,20 +69,28 @@
         </mat-form-field>
       </div>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Image URL</mat-label>
-        <input matInput formControlName="imageUrl" name="imageUrl" type="url" placeholder="https://…" />
-        @if (form.controls.imageUrl.hasError('required')) {
-          <mat-error>Image URL is required</mat-error>
-        } @else if (form.controls.imageUrl.hasError('url') || form.controls.imageUrl.hasError('maxlength')) {
-          <mat-error>Enter a valid http(s) URL</mat-error>
-        } @else if (form.controls.imageUrl.hasError('server')) {
-          <mat-error>{{ form.controls.imageUrl.getError('server') }}</mat-error>
-        }
-      </mat-form-field>
+      <div class="image-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Image</mat-label>
+          <input matInput formControlName="imageUrl" name="imageUrl" placeholder="https://… or upload a file" />
+          <mat-hint>Paste an image link, or upload a JPEG, PNG, WebP or GIF up to 5 MB</mat-hint>
+          @if (form.controls.imageUrl.hasError('required')) {
+            <mat-error>Add an image</mat-error>
+          } @else if (form.controls.imageUrl.hasError('url') || form.controls.imageUrl.hasError('maxlength')) {
+            <mat-error>Enter a valid http(s) URL or upload an image</mat-error>
+          } @else if (form.controls.imageUrl.hasError('server')) {
+            <mat-error>{{ form.controls.imageUrl.getError('server') }}</mat-error>
+          }
+        </mat-form-field>
+
+        <input #fileInput type="file" hidden [accept]="imageTypes" (change)="upload($event)" />
+        <button matButton="tonal" type="button" (click)="fileInput.click()" [disabled]="uploading() || saving()">
+          <mat-icon>upload</mat-icon> {{ uploading() ? 'Uploading…' : 'Upload' }}
+        </button>
+      </div>
 
       <div class="actions">
-        <button matButton="filled" type="submit" [disabled]="saving() || loading()">
+        <button matButton="filled" type="submit" [disabled]="saving() || loading() || uploading()">
           {{ id() ? 'Save changes' : 'Create product' }}
         </button>
         <a matButton routerLink="/admin/products">Cancel</a>
