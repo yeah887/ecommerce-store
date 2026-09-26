@@ -1,80 +1,41 @@
 import { Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { CATEGORY_LABELS, type Product } from '@store/shared';
 import { PricePipe } from '../shared/price.pipe';
 
 @Component({
   selector: 'app-product-card',
-  imports: [RouterLink, MatButtonModule, MatCardModule, MatIconModule, PricePipe],
+  imports: [RouterLink, MatIconModule, PricePipe],
+  host: { class: 'block h-full' },
   template: `
-    <mat-card appearance="outlined" class="card">
-      <a class="link" [routerLink]="['/products', product().id]">
-        <img [src]="product().imageUrl" [alt]="product().name" loading="lazy" />
-        <mat-card-content>
-          <p class="category">{{ categoryLabels[product().category] }}</p>
-          <h3 class="name">{{ product().name }}</h3>
-        </mat-card-content>
+    <div class="group flex h-full flex-col">
+      <a class="flex flex-1 flex-col rounded-2xl" [routerLink]="['/products', product().id]">
+        <div class="aspect-[4/3] overflow-hidden rounded-2xl bg-zinc-100">
+          <img
+            class="size-full object-cover transition duration-500 ease-out group-hover:scale-105"
+            [src]="product().imageUrl"
+            [alt]="product().name"
+            loading="lazy"
+          />
+        </div>
+        <p class="eyebrow mt-4">{{ categoryLabels[product().category] }}</p>
+        <h3 class="mt-1 line-clamp-2 font-medium text-zinc-900 group-hover:text-accent-700">
+          {{ product().name }}
+        </h3>
       </a>
-      <mat-card-actions class="actions">
-        <span class="price">{{ product().priceCents | price }}</span>
+      <div class="mt-3 flex items-center justify-between gap-2">
+        <span class="font-semibold text-zinc-900 tabular-nums">{{ product().priceCents | price }}</span>
         <button
-          matIconButton
           type="button"
+          class="grid size-9 place-items-center rounded-full border border-zinc-200 text-zinc-700 transition-colors hover:border-zinc-900 hover:bg-zinc-900 hover:text-white"
           [attr.aria-label]="'Add ' + product().name + ' to cart'"
           (click)="addToCart.emit()"
         >
-          <mat-icon>add_shopping_cart</mat-icon>
+          <mat-icon class="icon-18">add_shopping_cart</mat-icon>
         </button>
-      </mat-card-actions>
-    </mat-card>
-  `,
-  styles: `
-    :host {
-      display: block;
-      height: 100%;
-    }
-    .card {
-      height: 100%;
-      overflow: hidden;
-      transition: box-shadow 150ms;
-      &:hover,
-      &:focus-within {
-        box-shadow: var(--mat-sys-level2);
-      }
-    }
-    .link {
-      flex: 1;
-      color: inherit;
-      text-decoration: none;
-    }
-    img {
-      /* Material only sizes card images that are direct children of the card. */
-      display: block;
-      width: 100%;
-      aspect-ratio: 3 / 2;
-      object-fit: cover;
-      background: var(--mat-sys-surface-container);
-    }
-    .category {
-      margin: 12px 0 4px;
-      color: var(--mat-sys-on-surface-variant);
-      font: var(--mat-sys-label-medium);
-    }
-    .name {
-      margin: 0;
-      font: var(--mat-sys-title-medium);
-    }
-    .actions {
-      justify-content: space-between;
-      padding: 0 8px 8px 16px;
-    }
-    .price {
-      font: var(--mat-sys-title-medium);
-      color: var(--mat-sys-primary);
-    }
+      </div>
+    </div>
   `,
 })
 export class ProductCard {

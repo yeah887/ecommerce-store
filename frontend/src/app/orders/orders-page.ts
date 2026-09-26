@@ -13,98 +13,50 @@ import { StatusChip } from '../shared/status-chip';
   selector: 'app-orders-page',
   imports: [DatePipe, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, PricePipe, StatusChip],
   template: `
-    <h1 class="title">My orders</h1>
-    <div class="progress">
+    <h1 class="page-title">My orders</h1>
+    <div class="mt-6 mb-4 h-1 overflow-hidden rounded-full">
       @if (orders.isLoading()) {
         <mat-progress-bar mode="indeterminate" />
       }
     </div>
 
     @if (orders.error()) {
-      <p class="message">Couldn't load your orders. Please try again.</p>
+      <p class="py-16 text-center text-zinc-500">Couldn't load your orders. Please try again.</p>
     } @else if (orders.hasValue()) {
       @if (orders.value().length === 0) {
-        <section class="message">
-          <p>You haven't placed any orders yet.</p>
-          <a matButton="filled" routerLink="/">Start shopping</a>
+        <section class="card flex flex-col items-center px-6 py-16 text-center">
+          <span class="grid size-16 place-items-center rounded-full bg-zinc-100 text-zinc-400">
+            <mat-icon class="icon-32">receipt_long</mat-icon>
+          </span>
+          <p class="mt-4 text-zinc-600">You haven't placed any orders yet.</p>
+          <a matButton="filled" routerLink="/" class="mt-6">Start shopping</a>
         </section>
       } @else {
-        <ul class="list">
+        <ul class="card divide-y divide-zinc-200 overflow-hidden">
           @for (order of orders.value(); track order.id) {
             <li>
-              <a class="row" [routerLink]="['/orders', order.id]">
-                <span class="number">#{{ order.number }}</span>
-                <span class="date">{{ order.createdAt | date: 'mediumDate' }}</span>
-                <span class="items">{{ order.itemCount }} {{ order.itemCount === 1 ? 'item' : 'items' }}</span>
-                <span class="total">{{ order.totalCents | price }}</span>
+              <a class="flex items-center gap-4 px-4 py-4 hover:bg-zinc-50 sm:px-6" [routerLink]="['/orders', order.id]">
+                <span class="grid size-10 shrink-0 place-items-center rounded-xl bg-zinc-100 text-zinc-500 max-sm:hidden">
+                  <mat-icon class="icon-20">receipt_long</mat-icon>
+                </span>
+                <div class="min-w-0 flex-1">
+                  <p class="font-mono text-sm font-semibold text-zinc-900">#{{ order.number }}</p>
+                  <p class="mt-0.5 text-sm text-zinc-500">
+                    {{ order.createdAt | date: 'mediumDate' }} · {{ order.itemCount }}
+                    {{ order.itemCount === 1 ? 'item' : 'items' }}
+                    <span class="sm:hidden">· {{ order.totalCents | price }}</span>
+                  </p>
+                </div>
                 <app-status-chip [status]="order.status" />
-                <mat-icon class="chevron">chevron_right</mat-icon>
+                <span class="w-24 text-right font-semibold text-zinc-900 tabular-nums max-sm:hidden">
+                  {{ order.totalCents | price }}
+                </span>
+                <mat-icon class="!text-zinc-400 max-sm:hidden" aria-hidden="true">chevron_right</mat-icon>
               </a>
             </li>
           }
         </ul>
       }
-    }
-  `,
-  styles: `
-    .title {
-      font: var(--mat-sys-headline-medium);
-      margin: 0 0 16px;
-    }
-    .progress {
-      height: 4px;
-      margin-bottom: 8px;
-    }
-    .message {
-      padding: 48px 0;
-      text-align: center;
-      font: var(--mat-sys-body-large);
-    }
-    .list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      border: 1px solid var(--mat-sys-outline-variant);
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    li + li {
-      border-top: 1px solid var(--mat-sys-outline-variant);
-    }
-    .row {
-      display: grid;
-      grid-template-columns: 7em 1fr 6em 6em 7em 24px;
-      gap: 16px;
-      align-items: center;
-      padding: 16px;
-      color: inherit;
-      text-decoration: none;
-      &:hover {
-        background: var(--mat-sys-surface-container-low);
-      }
-      @media (max-width: 640px) {
-        grid-template-columns: 1fr auto;
-        .date,
-        .items,
-        .chevron {
-          display: none;
-        }
-      }
-    }
-    .number {
-      font-family: monospace;
-      font-weight: 600;
-    }
-    .date,
-    .items {
-      color: var(--mat-sys-on-surface-variant);
-    }
-    .total {
-      text-align: right;
-      font-weight: 500;
-    }
-    .chevron {
-      color: var(--mat-sys-on-surface-variant);
     }
   `,
 })

@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { NAME_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@store/shared';
 import { apiError } from '../shared/api-error';
@@ -22,10 +23,10 @@ type Field = 'name' | 'email' | 'password';
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
+    MatIconModule,
     MatProgressBarModule,
   ],
   templateUrl: './register-page.html',
-  styleUrl: './auth-page.scss',
 })
 export class RegisterPage {
   private readonly auth = inject(AuthService);

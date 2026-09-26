@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { apiError } from '../shared/api-error';
 import { AuthService } from './auth.service';
@@ -19,10 +20,10 @@ import { safeReturnUrl } from './return-url';
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
+    MatIconModule,
     MatProgressBarModule,
   ],
   templateUrl: './login-page.html',
-  styleUrl: './auth-page.scss',
 })
 export class LoginPage {
   private readonly auth = inject(AuthService);

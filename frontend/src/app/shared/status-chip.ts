@@ -1,36 +1,27 @@
 import { Component, input } from '@angular/core';
 import { ORDER_STATUS_LABELS, type OrderStatus } from '@store/shared';
 
+const STYLES: Record<OrderStatus, string> = {
+  placed: 'bg-sky-50 text-sky-700 ring-sky-600/20',
+  shipped: 'bg-amber-50 text-amber-800 ring-amber-600/20',
+  delivered: 'bg-emerald-50 text-emerald-700 ring-emerald-600/20',
+  cancelled: 'bg-zinc-100 text-zinc-600 ring-zinc-500/20',
+};
+
 @Component({
   selector: 'app-status-chip',
-  template: `<span class="chip" [class]="status()">{{ labels[status()] }}</span>`,
-  styles: `
-    .chip {
-      display: inline-block;
-      padding: 2px 10px;
-      border-radius: 12px;
-      font: var(--mat-sys-label-medium);
-      white-space: nowrap;
-    }
-    .placed {
-      background: #e3f2fd;
-      color: #0d47a1;
-    }
-    .shipped {
-      background: #fff3e0;
-      color: #8a4b00;
-    }
-    .delivered {
-      background: #e8f5e9;
-      color: #1b5e20;
-    }
-    .cancelled {
-      background: var(--mat-sys-surface-container-high);
-      color: var(--mat-sys-on-surface-variant);
-    }
+  template: `
+    <span
+      class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-inset"
+      [class]="styles[status()]"
+    >
+      <span class="size-1.5 rounded-full bg-current" aria-hidden="true"></span>
+      {{ labels[status()] }}
+    </span>
   `,
 })
 export class StatusChip {
   readonly status = input.required<OrderStatus>();
   protected readonly labels = ORDER_STATUS_LABELS;
+  protected readonly styles = STYLES;
 }

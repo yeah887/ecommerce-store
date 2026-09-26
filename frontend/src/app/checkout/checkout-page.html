@@ -1,71 +1,97 @@
-<h1 class="title">Checkout</h1>
+<h1 class="page-title">Checkout</h1>
 
 @if (cart.isEmpty()) {
-  <section class="empty">
-    <p>Your cart is empty, so there's nothing to check out.</p>
-    <a matButton="filled" routerLink="/">Browse the catalog</a>
+  <section class="card mt-8 flex flex-col items-center px-6 py-16 text-center">
+    <span class="grid size-16 place-items-center rounded-full bg-zinc-100 text-zinc-400">
+      <mat-icon class="icon-32">shopping_bag</mat-icon>
+    </span>
+    <p class="mt-4 text-zinc-600">Your cart is empty, so there's nothing to check out.</p>
+    <a matButton="filled" routerLink="/" class="mt-6">Browse the catalog</a>
   </section>
 } @else {
-  <form class="layout" [formGroup]="form" (ngSubmit)="placeOrder()" novalidate>
-    <section class="panel">
-      <h2>Shipping address</h2>
-      <div class="fields">
-        @for (field of addressFields; track field.key) {
-          <mat-form-field appearance="outline" [class]="'field-' + field.key">
-            <mat-label>{{ field.label }}</mat-label>
-            <input
-              matInput
-              [formControlName]="field.key"
-              [name]="field.key"
-              [attr.autocomplete]="field.autocomplete"
-            />
-            @let control = form.controls[field.key];
-            @if (control.hasError('required')) {
-              <mat-error>{{ field.label }} is required</mat-error>
-            } @else if (control.hasError('maxlength')) {
-              <mat-error>Too long</mat-error>
-            } @else if (control.hasError('server')) {
-              <mat-error>{{ control.getError('server') }}</mat-error>
-            }
-          </mat-form-field>
-        }
-      </div>
+  <form
+    class="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_380px]"
+    [formGroup]="form"
+    (ngSubmit)="placeOrder()"
+    novalidate
+  >
+    <div class="space-y-6">
+      <section class="card p-6 sm:p-8">
+        <h2 class="section-title flex items-center gap-3">
+          <span class="grid size-7 place-items-center rounded-full bg-zinc-900 text-sm text-white">1</span>
+          Shipping address
+        </h2>
+        <div class="mt-6 grid grid-cols-1 gap-x-4 sm:grid-cols-3">
+          @for (field of addressFields; track field.key) {
+            <mat-form-field
+              appearance="outline"
+              [class]="field.key === 'postalCode' ? '' : field.key === 'city' ? 'sm:col-span-2' : 'sm:col-span-3'"
+            >
+              <mat-label>{{ field.label }}</mat-label>
+              <input
+                matInput
+                [formControlName]="field.key"
+                [name]="field.key"
+                [attr.autocomplete]="field.autocomplete"
+              />
+              @let control = form.controls[field.key];
+              @if (control.hasError('required')) {
+                <mat-error>{{ field.label }} is required</mat-error>
+              } @else if (control.hasError('maxlength')) {
+                <mat-error>Too long</mat-error>
+              } @else if (control.hasError('server')) {
+                <mat-error>{{ control.getError('server') }}</mat-error>
+              }
+            </mat-form-field>
+          }
+        </div>
+      </section>
 
-      <h2>Payment</h2>
-      <div class="demo-payment">
-        <mat-icon>credit_card</mat-icon>
-        <p>
-          This is a demo store: payment is simulated and always succeeds. No card details are needed and
-          no money is charged.
-        </p>
-      </div>
-    </section>
+      <section class="card p-6 sm:p-8">
+        <h2 class="section-title flex items-center gap-3">
+          <span class="grid size-7 place-items-center rounded-full bg-zinc-900 text-sm text-white">2</span>
+          Payment
+        </h2>
+        <div class="mt-6 flex gap-4 rounded-xl bg-accent-50 p-4 text-sm leading-6 text-accent-900">
+          <mat-icon class="shrink-0 !text-accent-600" aria-hidden="true">credit_card</mat-icon>
+          <p>
+            This is a demo store: payment is simulated and always succeeds. No card details are needed and
+            no money is charged.
+          </p>
+        </div>
+      </section>
+    </div>
 
-    <aside class="panel summary">
-      <h2>Order summary</h2>
-      <ul class="lines">
+    <aside class="card relative overflow-hidden p-6 lg:sticky lg:top-24">
+      @if (placing()) {
+        <mat-progress-bar mode="indeterminate" class="!absolute inset-x-0 top-0" />
+      }
+      <h2 class="section-title">Order summary</h2>
+      <ul class="mt-4 space-y-3 text-sm">
         @for (line of cart.lines(); track line.productId) {
-          <li>
-            <span class="qty">{{ line.quantity }} ×</span>
-            <span class="name">{{ line.name }}</span>
-            <span class="amount">{{ line.priceCents * line.quantity | price }}</span>
+          <li class="flex gap-3">
+            <img class="size-12 shrink-0 rounded-lg bg-zinc-100 object-cover" [src]="line.imageUrl" alt="" />
+            <div class="min-w-0 flex-1">
+              <p class="line-clamp-2 font-medium text-zinc-900">{{ line.name }}</p>
+              <p class="text-zinc-500">Qty {{ line.quantity }}</p>
+            </div>
+            <span class="font-medium text-zinc-900 tabular-nums">{{ line.priceCents * line.quantity | price }}</span>
           </li>
         }
       </ul>
-      <mat-divider />
-      <div class="total">
-        <span>Total</span>
-        <strong>{{ cart.subtotalCents() | price }}</strong>
+      <div class="mt-6 flex items-baseline justify-between border-t border-zinc-200 pt-4">
+        <span class="font-medium text-zinc-900">Total</span>
+        <strong class="text-lg font-semibold text-zinc-900 tabular-nums">{{ cart.subtotalCents() | price }}</strong>
       </div>
-      <p class="note">The final price is confirmed from current prices when you place the order.</p>
+      <p class="mt-2 text-xs text-zinc-500">The final price is confirmed from current prices when you place the order.</p>
 
       @if (visibleError(); as message) {
-        <div class="form-error" role="alert">
+        <div class="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-800" role="alert">
           <p>{{ message }}</p>
           @if (stillRejected().length > 0) {
-            <ul>
+            <ul class="mt-2 space-y-1">
               @for (item of stillRejected(); track item.line.productId) {
-                <li>
+                <li class="flex items-center justify-between gap-2">
                   <span><strong>{{ item.line.name }}</strong>: {{ item.reason }}</span>
                   <button matButton type="button" (click)="cart.remove(item.line.productId)">Remove</button>
                 </li>
@@ -75,13 +101,10 @@
         </div>
       }
 
-      <button matButton="filled" type="submit" class="place" [disabled]="placing()">
+      <button matButton="filled" type="submit" class="mt-6 !h-12 w-full" [disabled]="placing()">
         Pay and place order
       </button>
-      <a matButton routerLink="/cart">Back to cart</a>
-      @if (placing()) {
-        <mat-progress-bar mode="indeterminate" />
-      }
+      <a matButton routerLink="/cart" class="mt-2 w-full">Back to cart</a>
     </aside>
   </form>
 }

@@ -1,8 +1,5 @@
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
+// Angular Material theme. Page layout and styling use Tailwind (tailwind.css);
+// the overrides below point Material's components at the same zinc/indigo palette.
 @use '@angular/material' as mat;
 
 html {
@@ -10,30 +7,93 @@ html {
   @include mat.theme(
     (
       color: (
-        primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
+        primary: mat.$violet-palette,
       ),
-      typography: Roboto,
+      typography: Inter,
       density: 0,
+    )
+  );
+
+  // Tailwind zinc and indigo values.
+  @include mat.theme-overrides(
+    (
+      primary: #18181b,
+      on-primary: #ffffff,
+      primary-container: #eef2ff,
+      on-primary-container: #312e81,
+      secondary-container: #f4f4f5,
+      on-secondary-container: #18181b,
+      surface: #ffffff,
+      on-surface: #18181b,
+      on-surface-variant: #52525b,
+      surface-container-lowest: #ffffff,
+      surface-container-low: #fafafa,
+      surface-container: #ffffff,
+      surface-container-high: #f4f4f5,
+      surface-container-highest: #e4e4e7,
+      outline: #d4d4d8,
+      outline-variant: #e4e4e7,
+      error: #dc2626,
+      error-container: #fef2f2,
+      on-error-container: #991b1b,
+      inverse-surface: #18181b,
+      inverse-on-surface: #fafafa,
+      inverse-primary: #a5b4fc,
+    )
+  );
+
+  @include mat.button-overrides(
+    (
+      filled-container-shape: 12px,
+      outlined-container-shape: 12px,
+      protected-container-shape: 12px,
+      text-container-shape: 12px,
+      tonal-container-shape: 12px,
+    )
+  );
+  @include mat.form-field-overrides(
+    (
+      outlined-container-shape: 12px,
+    )
+  );
+  @include mat.dialog-overrides(
+    (
+      container-shape: 20px,
+    )
+  );
+  @include mat.progress-bar-overrides(
+    (
+      active-indicator-color: #4f46e5,
+      track-color: #e0e7ff,
+    )
+  );
+  @include mat.table-overrides(
+    (
+      header-headline-color: #71717a,
+      header-headline-size: 12px,
+      header-headline-weight: 600,
+      header-headline-tracking: 0.05em,
+      row-item-outline-color: #f4f4f5,
+    )
+  );
+  @include mat.paginator-overrides(
+    (
+      container-background-color: transparent,
     )
   );
 }
 
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
   color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
+  background-color: #fafafa;
+  color: #18181b;
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
   margin: 0;
-  height: 100%;
+  min-height: 100%;
 }
-/* You can add global styles to this file, and also import other style files */
+
+// Table headers read as small caps labels; the header text itself stays in normal case for screen readers.
+.mat-mdc-header-cell {
+  text-transform: uppercase;
+}

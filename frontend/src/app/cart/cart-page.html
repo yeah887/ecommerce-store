@@ -1,50 +1,64 @@
-<h1 class="title">Your cart</h1>
+<h1 class="page-title">Shopping cart</h1>
 
 @if (cart.isEmpty()) {
-  <section class="empty">
-    <mat-icon class="empty-icon">remove_shopping_cart</mat-icon>
-    <p>Your cart is empty.</p>
-    <a matButton="filled" routerLink="/">Browse the catalog</a>
+  <section class="card mt-8 flex flex-col items-center px-6 py-16 text-center">
+    <span class="grid size-16 place-items-center rounded-full bg-zinc-100 text-zinc-400">
+      <mat-icon class="icon-32">shopping_bag</mat-icon>
+    </span>
+    <h2 class="mt-4 text-lg font-semibold text-zinc-900">Your cart is empty</h2>
+    <p class="mt-1 text-zinc-500">Find something you like in the catalog.</p>
+    <a matButton="filled" routerLink="/" class="mt-6">Browse the catalog</a>
   </section>
 } @else {
-  <div class="layout">
-    <ul class="lines">
+  <div class="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
+    <ul class="card divide-y divide-zinc-200">
       @for (line of cart.lines(); track line.productId) {
-        <li class="line">
-          <a [routerLink]="['/products', line.productId]" class="thumb">
-            <img [src]="line.imageUrl" [alt]="line.name" />
+        <li class="flex gap-4 p-4 sm:p-6">
+          <a [routerLink]="['/products', line.productId]" class="w-24 shrink-0 rounded-xl sm:w-32">
+            <img class="aspect-[4/3] w-full rounded-xl bg-zinc-100 object-cover" [src]="line.imageUrl" [alt]="line.name" />
           </a>
-          <div class="info">
-            <a [routerLink]="['/products', line.productId]" class="name">{{ line.name }}</a>
-            <span class="unit">{{ line.priceCents | price }} each</span>
+          <div class="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+            <div class="min-w-0 flex-1">
+              <a
+                [routerLink]="['/products', line.productId]"
+                class="line-clamp-2 rounded font-medium text-zinc-900 hover:text-accent-700"
+              >
+                {{ line.name }}
+              </a>
+              <p class="mt-1 text-sm text-zinc-500 tabular-nums">{{ line.priceCents | price }} each</p>
+            </div>
+            <div class="flex items-center justify-between gap-4">
+              <app-quantity-picker
+                [value]="line.quantity"
+                [label]="'Quantity of ' + line.name"
+                (valueChange)="cart.setQuantity(line.productId, $event)"
+              />
+              <span class="w-24 text-right font-semibold text-zinc-900 tabular-nums">
+                {{ line.priceCents * line.quantity | price }}
+              </span>
+            </div>
           </div>
-          <app-quantity-picker
-            [value]="line.quantity"
-            [label]="'Quantity of ' + line.name"
-            (valueChange)="cart.setQuantity(line.productId, $event)"
-          />
-          <span class="total">{{ line.priceCents * line.quantity | price }}</span>
           <button
-            matIconButton
             type="button"
+            class="grid size-9 shrink-0 place-items-center self-start rounded-full text-zinc-400 hover:bg-red-50 hover:text-red-600 sm:self-center"
             [attr.aria-label]="'Remove ' + line.name"
             (click)="cart.remove(line.productId)"
           >
-            <mat-icon>delete</mat-icon>
+            <mat-icon class="icon-20">close</mat-icon>
           </button>
         </li>
-        <mat-divider />
       }
     </ul>
 
-    <aside class="summary">
-      <div class="row">
-        <span>Subtotal ({{ cart.count() }} {{ cart.count() === 1 ? 'item' : 'items' }})</span>
-        <strong>{{ cart.subtotalCents() | price }}</strong>
+    <aside class="card p-6 lg:sticky lg:top-24">
+      <h2 class="section-title">Order summary</h2>
+      <div class="mt-4 flex items-baseline justify-between">
+        <span class="text-zinc-600">Subtotal ({{ cart.count() }} {{ cart.count() === 1 ? 'item' : 'items' }})</span>
+        <strong class="text-lg font-semibold text-zinc-900 tabular-nums">{{ cart.subtotalCents() | price }}</strong>
       </div>
-      <p class="note">Prices are confirmed at checkout.</p>
-      <a matButton="filled" routerLink="/checkout" class="checkout">Checkout</a>
-      <a matButton routerLink="/">Continue shopping</a>
+      <p class="mt-2 text-xs text-zinc-500">Prices are confirmed at checkout.</p>
+      <a matButton="filled" routerLink="/checkout" class="mt-6 !h-12 w-full">Checkout</a>
+      <a matButton routerLink="/" class="mt-2 w-full">Continue shopping</a>
     </aside>
   </div>
 }

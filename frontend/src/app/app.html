@@ -1,52 +1,90 @@
-<mat-toolbar class="header">
-  <a routerLink="/" class="brand">Store</a>
-  <span class="spacer"></span>
-
-  @if (auth.user(); as user) {
-    <button matButton [matMenuTriggerFor]="userMenu" class="user-button">
-      <mat-icon>account_circle</mat-icon>
-      <span class="user-name">{{ user.name }}</span>
-    </button>
-    <mat-menu #userMenu="matMenu" xPosition="before">
-      <div class="menu-email" mat-menu-item disabled>{{ user.email }}</div>
-      <a mat-menu-item routerLink="/orders">
-        <mat-icon>receipt_long</mat-icon>
-        <span>My orders</span>
+<div class="flex min-h-dvh flex-col">
+  <header class="sticky top-0 z-20 border-b border-zinc-200/80 bg-white/80 backdrop-blur-md">
+    <div class="mx-auto flex h-16 max-w-7xl items-center gap-1 px-4 sm:gap-2 sm:px-6 lg:px-8">
+      <a routerLink="/" class="mr-auto flex items-center gap-2.5 rounded-lg text-zinc-900">
+        <span class="grid size-8 place-items-center rounded-lg bg-zinc-900 text-white">
+          <mat-icon class="icon-20" aria-hidden="true">storefront</mat-icon>
+        </span>
+        <span class="text-lg font-semibold tracking-tight">Store</span>
       </a>
-      @if (auth.isAdmin()) {
-        <a mat-menu-item routerLink="/admin/products">
-          <mat-icon>inventory_2</mat-icon>
-          <span>Manage products</span>
+
+      @if (auth.user(); as user) {
+        <button
+          type="button"
+          class="flex items-center gap-2 rounded-full py-1 pr-2 pl-1 text-sm font-medium text-zinc-700 hover:bg-zinc-100 sm:pr-3"
+          [matMenuTriggerFor]="userMenu"
+          [attr.aria-label]="'Account menu for ' + user.name"
+        >
+          <span class="grid size-8 place-items-center rounded-full bg-accent-100 text-sm font-semibold text-accent-700">
+            {{ user.name.charAt(0).toUpperCase() }}
+          </span>
+          <span class="max-w-[12em] truncate max-sm:hidden">{{ user.name }}</span>
+          <mat-icon class="icon-18 !text-zinc-400 max-sm:hidden" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        <mat-menu #userMenu="matMenu" xPosition="before">
+          <div class="border-b border-zinc-100 px-4 pt-2 pb-3">
+            <p class="text-sm font-medium text-zinc-900">{{ user.name }}</p>
+            <p class="max-w-[16rem] truncate text-xs text-zinc-500">{{ user.email }}</p>
+          </div>
+          <a mat-menu-item routerLink="/orders">
+            <mat-icon>receipt_long</mat-icon>
+            <span>My orders</span>
+          </a>
+          @if (auth.isAdmin()) {
+            <a mat-menu-item routerLink="/admin/products">
+              <mat-icon>inventory_2</mat-icon>
+              <span>Manage products</span>
+            </a>
+            <a mat-menu-item routerLink="/admin/orders">
+              <mat-icon>local_shipping</mat-icon>
+              <span>Manage orders</span>
+            </a>
+          }
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Log out</span>
+          </button>
+        </mat-menu>
+      } @else {
+        <a routerLink="/login" class="rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900">
+          Log in
         </a>
-        <a mat-menu-item routerLink="/admin/orders">
-          <mat-icon>local_shipping</mat-icon>
-          <span>Manage orders</span>
+        <a
+          routerLink="/register"
+          class="rounded-lg bg-zinc-900 px-3.5 py-2 text-sm font-medium text-white hover:bg-zinc-700 max-sm:hidden"
+        >
+          Sign up
         </a>
       }
-      <button mat-menu-item (click)="logout()">
-        <mat-icon>logout</mat-icon>
-        <span>Log out</span>
-      </button>
-    </mat-menu>
-  } @else {
-    <a matButton routerLink="/login">Log in</a>
-    <a matButton routerLink="/register" class="register-link">Register</a>
-  }
 
-  <a
-    matIconButton
-    routerLink="/cart"
-    [attr.aria-label]="'Cart, ' + cart.count() + (cart.count() === 1 ? ' item' : ' items')"
-  >
-    <mat-icon
-      [matBadge]="cart.count()"
-      [matBadgeHidden]="cart.count() === 0"
-      aria-hidden="true"
-      >shopping_cart</mat-icon
+      <a
+        routerLink="/cart"
+        class="relative grid size-10 place-items-center rounded-full text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900"
+        [attr.aria-label]="'Cart, ' + cart.count() + (cart.count() === 1 ? ' item' : ' items')"
+      >
+        <mat-icon aria-hidden="true">shopping_bag</mat-icon>
+        @if (cart.count() > 0) {
+          <span
+            class="absolute -top-0.5 -right-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-accent-600 px-1 text-[11px] font-semibold text-white ring-2 ring-white"
+            aria-hidden="true"
+          >
+            {{ cart.count() }}
+          </span>
+        }
+      </a>
+    </div>
+  </header>
+
+  <main class="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+    <router-outlet />
+  </main>
+
+  <footer class="border-t border-zinc-200 bg-white">
+    <div
+      class="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"
     >
-  </a>
-</mat-toolbar>
-
-<main class="content">
-  <router-outlet />
-</main>
+      <p>A demo store: payment is simulated and nothing is really sold.</p>
+      <a routerLink="/status" class="hover:text-zinc-900">System status</a>
+    </div>
+  </footer>
+</div>

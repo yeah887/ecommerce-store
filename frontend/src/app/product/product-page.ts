@@ -23,7 +23,6 @@ import { PricePipe } from '../shared/price.pipe';
     QuantityPicker,
   ],
   templateUrl: './product-page.html',
-  styleUrl: './product-page.scss',
 })
 export class ProductPage {
   /** Bound from the `:id` route parameter. */

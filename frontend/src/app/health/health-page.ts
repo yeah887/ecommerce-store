@@ -13,7 +13,6 @@ type HealthView = 'loading' | 'healthy' | 'degraded' | 'unreachable';
   selector: 'app-health-page',
   imports: [MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './health-page.html',
-  styleUrl: './health-page.scss',
 })
 export class HealthPage {
   protected readonly health = httpResource<HealthResponse>(() => '/api/health');

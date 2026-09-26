@@ -11,31 +11,14 @@ import { MatIconModule } from '@angular/material/icon';
   selector: 'app-not-found',
   imports: [RouterLink, MatButtonModule, MatIconModule],
   template: `
-    <section class="not-found">
-      <mat-icon class="icon">search_off</mat-icon>
-      <h1>{{ heading() ?? defaultHeading }}</h1>
-      <p>{{ message() ?? defaultMessage }}</p>
-      <a matButton="filled" routerLink="/">Back to the catalog</a>
+    <section class="card mx-auto flex max-w-xl flex-col items-center px-6 py-16 text-center">
+      <span class="grid size-16 place-items-center rounded-full bg-zinc-100 text-zinc-400">
+        <mat-icon class="icon-32">search_off</mat-icon>
+      </span>
+      <h1 class="page-title mt-6">{{ heading() ?? defaultHeading }}</h1>
+      <p class="mt-2 text-zinc-500">{{ message() ?? defaultMessage }}</p>
+      <a matButton="filled" routerLink="/" class="mt-8">Back to the catalog</a>
     </section>
-  `,
-  styles: `
-    .not-found {
-      padding: 64px 16px;
-      text-align: center;
-    }
-    .icon {
-      width: 64px;
-      height: 64px;
-      font-size: 64px;
-      color: var(--mat-sys-on-surface-variant);
-    }
-    h1 {
-      font: var(--mat-sys-headline-medium);
-    }
-    p {
-      color: var(--mat-sys-on-surface-variant);
-      margin-bottom: 24px;
-    }
   `,
 })
 export class NotFound {

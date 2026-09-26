@@ -1,14 +1,21 @@
-<mat-card appearance="outlined" class="auth-card">
-  <mat-card-header>
-    <mat-card-title>Log in</mat-card-title>
-  </mat-card-header>
+<div class="mx-auto max-w-md py-4 sm:py-8">
+  <div class="text-center">
+    <span class="mx-auto grid size-12 place-items-center rounded-2xl bg-zinc-900 text-white">
+      <mat-icon aria-hidden="true">storefront</mat-icon>
+    </span>
+    <h1 class="page-title mt-5">Welcome back</h1>
+    <p class="mt-2 text-sm text-zinc-500">Log in to check out and see your orders.</p>
+  </div>
 
-  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-    <mat-card-content class="fields">
-      @if (error()) {
-        <p class="form-error" role="alert">{{ error() }}</p>
-      }
+  <form class="card relative mt-8 overflow-hidden p-6 sm:p-8" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    @if (submitting()) {
+      <mat-progress-bar mode="indeterminate" class="!absolute inset-x-0 top-0" />
+    }
+    @if (error()) {
+      <p class="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">{{ error() }}</p>
+    }
 
+    <div class="flex flex-col gap-1">
       <mat-form-field appearance="outline">
         <mat-label>Email</mat-label>
         <input matInput formControlName="email" type="email" autocomplete="email" />
@@ -26,15 +33,18 @@
           <mat-error>Password is required</mat-error>
         }
       </mat-form-field>
-    </mat-card-content>
+    </div>
 
-    <mat-card-actions class="actions">
-      <button matButton="filled" type="submit" [disabled]="submitting()">Log in</button>
-      <a matButton routerLink="/register" [queryParams]="{ returnUrl: returnUrl() }">Create an account</a>
-    </mat-card-actions>
+    <button matButton="filled" type="submit" class="mt-4 !h-12 w-full" [disabled]="submitting()">Log in</button>
   </form>
 
-  @if (submitting()) {
-    <mat-progress-bar mode="indeterminate" />
-  }
-</mat-card>
+  <p class="mt-6 text-center text-sm text-zinc-500">
+    New here?
+    <a
+      routerLink="/register"
+      [queryParams]="{ returnUrl: returnUrl() }"
+      class="rounded font-medium text-accent-700 hover:text-accent-600 hover:underline"
+      >Create an account</a
+    >
+  </p>
+</div>

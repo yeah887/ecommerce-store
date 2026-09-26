@@ -9,51 +9,29 @@ import { PricePipe } from '../shared/price.pipe';
   selector: 'app-confirmation-page',
   imports: [RouterLink, MatButtonModule, MatIconModule, PricePipe],
   template: `
-    <section class="confirmation">
-      <mat-icon class="icon">check_circle</mat-icon>
-      <h1>Thank you for your order!</h1>
-      <p class="number">Order number <strong>{{ number() }}</strong></p>
+    <section class="card mx-auto max-w-xl px-6 py-12 text-center sm:px-10">
+      <span class="mx-auto grid size-16 place-items-center rounded-full bg-emerald-50 text-emerald-600">
+        <mat-icon class="icon-36">check_circle</mat-icon>
+      </span>
+      <h1 class="page-title mt-6">Thank you for your order!</h1>
+      <p class="mt-2 text-zinc-500">
+        Order number <strong class="font-mono text-base font-semibold text-zinc-900">{{ number() }}</strong>
+      </p>
 
       @if (order(); as o) {
-        <p>
+        <p class="mt-6 leading-7 text-zinc-600">
           We've received your order of {{ o.lines.length }}
           {{ o.lines.length === 1 ? 'product' : 'products' }} for
-          <strong>{{ o.totalCents | price }}</strong>. It will be shipped to {{ o.shippingAddress.name }},
-          {{ o.shippingAddress.city }}.
+          <strong class="text-zinc-900">{{ o.totalCents | price }}</strong>. It will be shipped to
+          {{ o.shippingAddress.name }}, {{ o.shippingAddress.city }}.
         </p>
       }
 
-      <div class="actions">
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
         <a matButton="outlined" [routerLink]="['/orders', id()]">View order</a>
         <a matButton="filled" routerLink="/">Continue shopping</a>
       </div>
     </section>
-  `,
-  styles: `
-    .confirmation {
-      max-width: 560px;
-      margin: 32px auto;
-      text-align: center;
-      font: var(--mat-sys-body-large);
-    }
-    .icon {
-      width: 72px;
-      height: 72px;
-      font-size: 72px;
-      color: #2e7d32;
-    }
-    h1 {
-      font: var(--mat-sys-headline-medium);
-    }
-    .actions {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-    }
-    .number strong {
-      font-family: monospace;
-      font-size: 1.2em;
-    }
   `,
 })
 export class ConfirmationPage {

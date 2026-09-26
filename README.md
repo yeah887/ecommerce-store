@@ -2,7 +2,7 @@
 
 A full-stack e-commerce store built as a learning and portfolio project. Nothing is really sold and no money moves: payment is simulated. The rest works end to end: catalog, cart, accounts, checkout, order history, and an admin area for products and orders.
 
-- **Frontend:** Angular 22 (standalone components, signals, Angular Material), client-side rendered
+- **Frontend:** Angular 22 (standalone components, signals), styled with Tailwind CSS 4 and Angular Material, client-side rendered
 - **Backend:** Express 5 REST API in TypeScript, Mongoose, sessions stored in MongoDB
 - **Database:** MongoDB 7
 - **Runs with:** Docker Compose, in a dev mode with hot reload or a production-like mode behind nginx
@@ -127,6 +127,9 @@ The first backend run downloads a MongoDB binary (about 180 MB unpacked) into `~
 │   │   └── payments.ts     PaymentProvider interface and the mock provider
 │   └── test/
 ├── frontend/   Angular app (a folder per feature: catalog, product, cart, checkout, orders, auth, admin)
+│   └── src/
+│       ├── tailwind.css    design tokens and shared utilities (card, page-title, eyebrow, icon-*)
+│       └── styles.scss     Material theme, pointed at the same colours
 ├── compose.yaml            production-like stack
 └── compose.override.yaml   dev-mode additions
 ```
@@ -157,6 +160,7 @@ Every route is under `/api`. Errors always have the shape `{ "error": { "code", 
 - **MongoDB 7, not 8:** MongoDB 8.x refuses to start on Linux kernel 6.19 and newer ([SERVER-121912](https://jira.mongodb.org/browse/SERVER-121912)). The backend tests pin mongodb-memory-server to the same 7.0 line.
 - **Sample images** come from picsum.photos: random photos, not pictures of the products. They need internet access. Uploaded images are served by the API itself.
 - **Uploaded images are checked by their content:** the server detects the type from the file's first bytes and ignores the type the browser claims. SVG is not accepted, because it can contain scripts.
+- **Tailwind and Material together:** pages are styled with Tailwind utilities; Material still provides the interactive widgets (form fields, select, menu, dialog, table, paginator, snackbar), themed to the same zinc and indigo palette. Material's CSS is not in a cascade layer, so it beats Tailwind's layered utilities on Material elements: size a `mat-icon` with `icon-<px>` and colour it with an important utility such as `!text-zinc-400`.
 - **Out of scope for this version:**
   - real payments, taxes and shipping costs
   - inventory, reviews and guest checkout

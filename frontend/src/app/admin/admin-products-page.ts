@@ -3,9 +3,7 @@ import { Component, inject, input, linkedSignal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, type PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -22,16 +20,13 @@ import { PricePipe } from '../shared/price.pipe';
     FormsModule,
     RouterLink,
     MatButtonModule,
-    MatFormFieldModule,
     MatIconModule,
-    MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,
     MatTableModule,
     PricePipe,
   ],
   templateUrl: './admin-products-page.html',
-  styleUrl: './admin-products-page.scss',
 })
 export class AdminProductsPage {
   private readonly http = inject(HttpClient);

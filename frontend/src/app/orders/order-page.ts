@@ -3,7 +3,6 @@ import { HttpClient, HttpErrorResponse, httpResource } from '@angular/common/htt
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -13,6 +12,7 @@ import { NotFound } from '../not-found/not-found';
 import { apiError } from '../shared/api-error';
 import { Confirm } from '../shared/confirm-dialog';
 import { PricePipe } from '../shared/price.pipe';
+import { OrderProgress } from '../shared/order-progress';
 import { StatusChip } from '../shared/status-chip';
 
 @Component({
@@ -21,15 +21,14 @@ import { StatusChip } from '../shared/status-chip';
     DatePipe,
     RouterLink,
     MatButtonModule,
-    MatDividerModule,
     MatIconModule,
     MatProgressBarModule,
     NotFound,
     PricePipe,
+    OrderProgress,
     StatusChip,
   ],
   templateUrl: './order-page.html',
-  styleUrl: './order-page.scss',
 })
 export class OrderPage {
   private readonly http = inject(HttpClient);

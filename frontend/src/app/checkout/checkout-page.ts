@@ -3,7 +3,6 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -34,7 +33,6 @@ interface RejectedLine {
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
-    MatDividerModule,
     MatFormFieldModule,
     MatIconModule,
     MatInputModule,
@@ -42,7 +40,6 @@ interface RejectedLine {
     PricePipe,
   ],
   templateUrl: './checkout-page.html',
-  styleUrl: './checkout-page.scss',
 })
 export class CheckoutPage {
   private readonly http = inject(HttpClient);

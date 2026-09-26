@@ -3,10 +3,7 @@ import { httpResource } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, type PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import {
@@ -18,6 +15,7 @@ import {
   type Product,
 } from '@store/shared';
 import { AddToCart } from '../cart/add-to-cart';
+import { FilterPills, type FilterOption } from '../shared/filter-pills';
 import { ProductCard } from './product-card';
 
 /** Product grid with search, category filter and pagination, all kept in the URL query. */
@@ -26,16 +24,13 @@ import { ProductCard } from './product-card';
   imports: [
     FormsModule,
     MatButtonModule,
-    MatChipsModule,
-    MatFormFieldModule,
     MatIconModule,
-    MatInputModule,
     MatPaginatorModule,
     MatProgressBarModule,
+    FilterPills,
     ProductCard,
   ],
   templateUrl: './catalog-page.html',
-  styleUrl: './catalog-page.scss',
 })
 export class CatalogPage {
   private readonly router = inject(Router);
@@ -46,8 +41,11 @@ export class CatalogPage {
   readonly category = input<string>();
   readonly page = input<string>();
 
-  protected readonly categories = CATEGORIES;
   protected readonly categoryLabels = CATEGORY_LABELS;
+  protected readonly categoryOptions: FilterOption[] = [
+    { value: '', label: 'All' },
+    ...CATEGORIES.map((category) => ({ value: category, label: CATEGORY_LABELS[category] })),
+  ];
   protected readonly pageSize = DEFAULT_PAGE_SIZE;
 
   protected readonly searchText = linkedSignal(() => this.q() ?? '');

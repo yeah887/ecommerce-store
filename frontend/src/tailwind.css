@@ -1,0 +1,52 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens. Neutrals are Tailwind's zinc and the accent is indigo;
+ * styles.scss points Angular Material's system colours at the same values.
+ */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --color-accent-50: var(--color-indigo-50);
+  --color-accent-100: var(--color-indigo-100);
+  --color-accent-300: var(--color-indigo-300);
+  --color-accent-400: var(--color-indigo-400);
+  --color-accent-500: var(--color-indigo-500);
+  --color-accent-600: var(--color-indigo-600);
+  --color-accent-700: var(--color-indigo-700);
+  --color-accent-900: var(--color-indigo-900);
+}
+
+@layer base {
+  :where(a, button, input, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-accent-600);
+    outline-offset: 2px;
+  }
+}
+
+/* The few patterns every page shares. */
+@utility card {
+  @apply rounded-2xl border border-zinc-200 bg-white;
+}
+
+@utility page-title {
+  @apply text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl;
+}
+
+@utility section-title {
+  @apply text-base font-semibold text-zinc-900;
+}
+
+@utility eyebrow {
+  @apply text-xs font-semibold tracking-wider text-zinc-500 uppercase;
+}
+
+/*
+ * Material icons size and colour themselves with unlayered CSS, which beats these layered utilities:
+ * size a mat-icon with icon-<px> and colour it with an important utility such as !text-zinc-400.
+ */
+@utility icon-* {
+  width: calc(--value(integer) * 1px) !important;
+  height: calc(--value(integer) * 1px) !important;
+  font-size: calc(--value(integer) * 1px) !important;
+}

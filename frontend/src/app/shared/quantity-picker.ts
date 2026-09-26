@@ -1,62 +1,45 @@
 import { Component, input, output } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MAX_QUANTITY } from '@store/shared';
 
 /** A − / number / + control for quantities from 1 to MAX_QUANTITY. Typed values are clamped. */
 @Component({
   selector: 'app-quantity-picker',
-  imports: [MatButtonModule, MatIconModule],
+  imports: [MatIconModule],
   template: `
-    <div class="picker" role="group" [attr.aria-label]="label()">
+    <div
+      class="inline-flex h-11 items-center rounded-xl border border-zinc-300 bg-white"
+      role="group"
+      [attr.aria-label]="label()"
+    >
       <button
-        matIconButton
         type="button"
+        class="grid h-full w-10 place-items-center rounded-l-xl text-zinc-600 hover:bg-zinc-50 disabled:text-zinc-300 disabled:hover:bg-transparent"
         aria-label="Decrease quantity"
         [disabled]="value() <= 1"
         (click)="emit(value() - 1)"
       >
-        <mat-icon>remove</mat-icon>
+        <mat-icon class="icon-18">remove</mat-icon>
       </button>
       <input
         type="number"
         min="1"
+        class="w-10 bg-transparent text-center font-medium tabular-nums [appearance:textfield] focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         [max]="max"
         [attr.aria-label]="label()"
         [value]="value()"
         (change)="onTyped($event)"
       />
       <button
-        matIconButton
         type="button"
+        class="grid h-full w-10 place-items-center rounded-r-xl text-zinc-600 hover:bg-zinc-50 disabled:text-zinc-300 disabled:hover:bg-transparent"
         aria-label="Increase quantity"
         [disabled]="value() >= max"
         (click)="emit(value() + 1)"
       >
-        <mat-icon>add</mat-icon>
+        <mat-icon class="icon-18">add</mat-icon>
       </button>
     </div>
-  `,
-  styles: `
-    .picker {
-      display: inline-flex;
-      align-items: center;
-      border: 1px solid var(--mat-sys-outline-variant);
-      border-radius: 24px;
-    }
-    input {
-      width: 3em;
-      border: none;
-      background: transparent;
-      color: inherit;
-      font: var(--mat-sys-title-medium);
-      text-align: center;
-      -moz-appearance: textfield;
-      &::-webkit-inner-spin-button,
-      &::-webkit-outer-spin-button {
-        -webkit-appearance: none;
-      }
-    }
   `,
 })
 export class QuantityPicker {

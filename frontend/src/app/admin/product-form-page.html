@@ -1,19 +1,21 @@
 @if (notFound()) {
   <app-not-found heading="Product not found" message="It may have been deleted." />
 } @else {
-  <a matButton routerLink="/admin/products"><mat-icon>arrow_back</mat-icon> Products</a>
-  <h1 class="title">{{ id() ? 'Edit product' : 'New product' }}</h1>
+  <a routerLink="/admin/products" class="inline-flex items-center gap-1 rounded text-sm font-medium text-zinc-500 hover:text-zinc-900">
+    <mat-icon class="icon-18" aria-hidden="true">arrow_back</mat-icon> Products
+  </a>
+  <h1 class="page-title mt-4">{{ id() ? 'Edit product' : 'New product' }}</h1>
 
-  <div class="progress">
+  <div class="mt-6 mb-4 h-1 overflow-hidden rounded-full">
     @if (loading() || saving() || uploading()) {
       <mat-progress-bar mode="indeterminate" />
     }
   </div>
 
-  <div class="layout">
-    <form [formGroup]="form" (ngSubmit)="save()" novalidate class="fields">
+  <div class="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate class="card flex flex-col gap-1 p-6 sm:p-8">
       @if (error()) {
-        <p class="form-error" role="alert">{{ error() }}</p>
+        <p class="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">{{ error() }}</p>
       }
 
       <mat-form-field appearance="outline">
@@ -40,7 +42,7 @@
         }
       </mat-form-field>
 
-      <div class="row">
+      <div class="grid gap-x-4 sm:grid-cols-2">
         <mat-form-field appearance="outline">
           <mat-label>Price</mat-label>
           <span matTextPrefix>€&nbsp;</span>
@@ -69,8 +71,8 @@
         </mat-form-field>
       </div>
 
-      <div class="image-row">
-        <mat-form-field appearance="outline">
+      <div class="flex items-start gap-3">
+        <mat-form-field appearance="outline" class="min-w-0 flex-1">
           <mat-label>Image</mat-label>
           <input matInput formControlName="imageUrl" name="imageUrl" placeholder="https://… or upload a file" />
           <mat-hint>Paste an image link, or upload a JPEG, PNG, WebP or GIF up to 5 MB</mat-hint>
@@ -84,12 +86,18 @@
         </mat-form-field>
 
         <input #fileInput type="file" hidden [accept]="imageTypes" (change)="upload($event)" />
-        <button matButton="tonal" type="button" (click)="fileInput.click()" [disabled]="uploading() || saving()">
+        <button
+          matButton="outlined"
+          type="button"
+          class="mt-2 !h-10"
+          (click)="fileInput.click()"
+          [disabled]="uploading() || saving()"
+        >
           <mat-icon>upload</mat-icon> {{ uploading() ? 'Uploading…' : 'Upload' }}
         </button>
       </div>
 
-      <div class="actions">
+      <div class="mt-6 flex gap-2 border-t border-zinc-200 pt-6">
         <button matButton="filled" type="submit" [disabled]="saving() || loading() || uploading()">
           {{ id() ? 'Save changes' : 'Create product' }}
         </button>
@@ -97,12 +105,14 @@
       </div>
     </form>
 
-    <aside class="preview">
-      <p class="preview-label">Image preview</p>
+    <aside class="card p-4 lg:sticky lg:top-24">
+      <p class="eyebrow mb-3">Image preview</p>
       @if (form.controls.imageUrl.valid) {
-        <img [src]="form.controls.imageUrl.value" alt="Preview" />
+        <img class="aspect-[4/3] w-full rounded-xl bg-zinc-100 object-cover" [src]="form.controls.imageUrl.value" alt="Preview" />
       } @else {
-        <div class="placeholder"><mat-icon>image</mat-icon></div>
+        <div class="grid aspect-[4/3] w-full place-items-center rounded-xl border border-dashed border-zinc-300 bg-zinc-50 text-zinc-400">
+          <mat-icon class="icon-32">image</mat-icon>
+        </div>
       }
     </aside>
   </div>

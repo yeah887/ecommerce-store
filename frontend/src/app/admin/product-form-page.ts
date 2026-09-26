@@ -61,7 +61,6 @@ function productImageUrl(control: AbstractControl<string>): ValidationErrors | n
     NotFound,
   ],
   templateUrl: './product-form-page.html',
-  styleUrl: './product-form-page.scss',
 })
 export class ProductFormPage implements OnInit {
   private readonly http = inject(HttpClient);
