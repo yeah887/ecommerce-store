@@ -10,7 +10,7 @@ COPY backend/package.json backend/
 COPY frontend/package.json frontend/
 # The root postinstall builds the shared package. The MongoDB binary for the backend tests isn't needed here.
 RUN --mount=type=cache,target=/root/.npm,sharing=locked \
-    MONGOMS_DISABLE_POSTINSTALL=1 npm ci -w shared -w backend --include-workspace-root --fetch-retries=5 --fetch-retry-maxtimeout=120000 --maxsockets=4
+    MONGOMS_DISABLE_POSTINSTALL=1 npm ci -w shared -w backend --include-workspace-root --fetch-retries=5 --fetch-retry-maxtimeout=120000
 
 # Development: source is bind-mounted by compose.override.yaml.
 FROM deps AS dev
@@ -30,7 +30,7 @@ COPY shared/package.json shared/
 COPY backend/package.json backend/
 COPY frontend/package.json frontend/
 RUN --mount=type=cache,target=/root/.npm,sharing=locked \
-    npm ci -w backend --omit=dev --ignore-scripts --fetch-retries=5 --fetch-retry-maxtimeout=120000 --maxsockets=4
+    npm ci -w backend --omit=dev --ignore-scripts --fetch-retries=5 --fetch-retry-maxtimeout=120000
 COPY --from=build /app/shared/dist shared/dist
 COPY --from=build /app/backend/dist backend/dist
 USER node

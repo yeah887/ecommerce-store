@@ -8,3 +8,12 @@ services:
     healthcheck:
       # The 4.4 image has the legacy `mongo` shell instead of `mongosh`.
       test: ["CMD", "mongo", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+
+  # Build with the Pi's own network and DNS. On a Pi 4, npm downloads from containers took about 6 s each,
+  # and installs through the build engine's own network crashed npm ("Exit handler never called").
+  api:
+    build:
+      network: host
+  web:
+    build:
+      network: host

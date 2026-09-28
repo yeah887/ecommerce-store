@@ -10,7 +10,7 @@ COPY backend/package.json backend/
 COPY frontend/package.json frontend/
 # The root postinstall builds the shared package.
 RUN --mount=type=cache,target=/root/.npm,sharing=locked \
-    npm ci -w shared -w frontend --include-workspace-root --fetch-retries=5 --fetch-retry-maxtimeout=120000 --maxsockets=4
+    npm ci -w shared -w frontend --include-workspace-root --fetch-retries=5 --fetch-retry-maxtimeout=120000
 
 # Development: source is bind-mounted by compose.override.yaml.
 FROM deps AS dev
