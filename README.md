@@ -66,6 +66,16 @@ Open http://localhost:8080. The API refuses to start without a `SESSION_SECRET` 
 
 Both modes use the same MongoDB volume (`store_mongo-data`). To start over with an empty database, run `docker compose down -v`. That deletes all products, users and orders.
 
+## Raspberry Pi 4
+
+MongoDB 5.0 and newer need an ARMv8.2-A CPU, which the Pi 4 doesn't have, so the regular stack's database won't start there. `compose.pi.yaml` swaps in MongoDB 4.4.18, the last release that runs on a Pi 4 and the oldest one the app's MongoDB driver supports:
+
+```sh
+docker compose -f compose.yaml -f compose.pi.yaml up --build
+```
+
+This needs a 64-bit OS (`uname -m` shows `aarch64`). MongoDB 4.4 is end-of-life and gets no security fixes, so keep this stack on a trusted network. A Pi 5 can use the regular stack.
+
 ## Configuration
 
 Compose reads `.env` from the project root. The file is git-ignored; `.env.example` lists every variable.

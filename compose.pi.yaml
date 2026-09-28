@@ -1,0 +1,10 @@
+# Raspberry Pi 4: docker compose -f compose.yaml -f compose.pi.yaml up --build
+# MongoDB 5.0 and newer need an ARMv8.2-A CPU; the Pi 4's Cortex-A72 is ARMv8.0.
+# 4.4.18 is the last release that runs on it, and 4.4 is the oldest server the app's driver supports.
+# MongoDB 4.4 is end-of-life and gets no security fixes: keep this stack on a trusted network.
+services:
+  mongo:
+    image: mongo:4.4.18
+    healthcheck:
+      # The 4.4 image has the legacy `mongo` shell instead of `mongosh`.
+      test: ["CMD", "mongo", "--quiet", "--eval", "db.adminCommand('ping').ok"]
