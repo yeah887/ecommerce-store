@@ -1,4 +1,6 @@
 # Build context is the repo root (npm workspaces share one lockfile).
+# npm installs share one BuildKit cache, locked so only one runs at a time (also across the api and web
+# builds): parallel installs on a slow network, e.g. on a Raspberry Pi, crash npm ("Exit handler never called").
 
 FROM node:22-alpine AS deps
 WORKDIR /app
@@ -7,7 +9,8 @@ COPY shared/ shared/
 COPY backend/package.json backend/
 COPY frontend/package.json frontend/
 # The root postinstall builds the shared package.
-RUN npm ci -w shared -w frontend --include-workspace-root
+RUN --mount=type=cache,target=/root/.npm,sharing=locked \
+    npm ci -w shared -w frontend --include-workspace-root --fetch-retries=5 --fetch-retry-maxtimeout=120000 --maxsockets=4
 
 # Development: source is bind-mounted by compose.override.yaml.
 FROM deps AS dev
