@@ -1,5 +1,5 @@
 import { Schema, type Connection, type InferSchemaType, type Model } from 'mongoose';
-import { CATEGORIES, type Product } from '@store/shared';
+import { CATEGORIES, PRODUCT_LIMITS, type Product } from '@store/shared';
 
 const productSchema = new Schema(
   {
@@ -12,7 +12,13 @@ const productSchema = new Schema(
       validate: { validator: Number.isInteger, message: 'priceCents must be an integer' },
     },
     category: { type: String, required: true, enum: CATEGORIES },
-    imageUrl: { type: String, required: true, trim: true },
+    images: {
+      type: [{ type: String, trim: true }],
+      validate: {
+        validator: (images: string[]) => images.length >= 1 && images.length <= PRODUCT_LIMITS.maxImages,
+        message: `A product needs 1 to ${PRODUCT_LIMITS.maxImages} images`,
+      },
+    },
   },
   { timestamps: true },
 );
@@ -34,7 +40,8 @@ export function toProduct(doc: ProductDoc): Product {
     description: doc.description,
     priceCents: doc.priceCents,
     category: doc.category,
-    imageUrl: doc.imageUrl,
+    imageUrl: doc.images[0],
+    images: doc.images,
     createdAt: doc.createdAt.toISOString(),
     updatedAt: doc.updatedAt.toISOString(),
   };

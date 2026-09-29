@@ -9,7 +9,7 @@ const fixture = (name: string, category: string, description = `${name} descript
   description,
   priceCents: 1000,
   category,
-  imageUrl: `https://example.com/${encodeURIComponent(name)}.jpg`,
+  images: [`https://example.com/${encodeURIComponent(name)}.jpg`],
 });
 
 describe('GET /api/products', () => {
@@ -55,6 +55,7 @@ describe('GET /api/products', () => {
       priceCents: 1000,
       category: 'books',
       imageUrl: 'https://example.com/Delta%20Cookbook.jpg',
+      images: ['https://example.com/Delta%20Cookbook.jpg'],
       createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });

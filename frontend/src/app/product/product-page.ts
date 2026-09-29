@@ -10,6 +10,7 @@ import { AddToCart } from '../cart/add-to-cart';
 import { NotFound } from '../not-found/not-found';
 import { QuantityPicker } from '../shared/quantity-picker';
 import { PricePipe } from '../shared/price.pipe';
+import { ProductGallery } from './product-gallery';
 
 @Component({
   selector: 'app-product-page',
@@ -20,6 +21,7 @@ import { PricePipe } from '../shared/price.pipe';
     MatProgressBarModule,
     NotFound,
     PricePipe,
+    ProductGallery,
     QuantityPicker,
   ],
   templateUrl: './product-page.html',

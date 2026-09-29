@@ -33,6 +33,12 @@ export async function prepareDatabase(
     db.collection(SESSIONS_COLLECTION).createIndex({ expires: 1 }, { expireAfterSeconds: 0 }),
   ]);
 
+  // Products from before multiple images had a single `imageUrl`; it becomes their only image.
+  await products.collection.updateMany({ images: { $exists: false }, imageUrl: { $type: 'string' } }, [
+    { $set: { images: ['$imageUrl'] } },
+    { $unset: 'imageUrl' },
+  ]);
+
   if (seed && (await products.estimatedDocumentCount()) === 0) {
     await products.insertMany(SAMPLE_PRODUCTS);
   }

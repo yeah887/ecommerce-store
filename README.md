@@ -10,7 +10,7 @@ A full-stack e-commerce store built as a learning and portfolio project. Nothing
 ## Features
 
 - **Catalog:** product grid with text search, category filter and pagination. The state is kept in the URL, so views can be bookmarked and the back button works.
-- **Product pages:** details and a quantity picker.
+- **Product pages:** details, a quantity picker and an image gallery with thumbnails, swipe and arrow-key navigation, and a full-screen view.
 - **Cart:** kept in the browser (localStorage) and survives reloads. Quantities are capped at 99, and open tabs stay in sync.
 - **Accounts:**
   - Register, log in and log out.
@@ -23,7 +23,7 @@ A full-stack e-commerce store built as a learning and portfolio project. Nothing
 - **Order history:** customers see their orders and can cancel one until it ships.
 - **Admin:**
   - Create, edit and delete products, with prices entered in euros.
-  - Upload product pictures (JPEG, PNG, WebP or GIF, up to 5 MB), or paste a link to an image hosted elsewhere. Uploads are stored in MongoDB (GridFS) and deleted once no product uses them.
+  - Give each product 1 to 15 images: upload several at once (JPEG, PNG, WebP or GIF, up to 5 MB each) or add links to images hosted elsewhere, then reorder them. The first image is the cover. Uploads are stored in MongoDB (GridFS) and deleted once no product uses them.
   - See every order, filter by status, and move orders through the lifecycle:
 
     ```
@@ -114,7 +114,8 @@ npm test -w frontend     # Angular unit tests
   - checkout price recalculation and validation
   - order privacy and the status lifecycle
   - admin authorization
-  - image upload, type detection and cleanup
+  - image upload, type detection, image lists and cleanup
+  - migrating single-image products to image lists
   - seeding
 - **Frontend:** unit tests for the cart store, euro-to-cents parsing and the post-login redirect check.
 
@@ -160,7 +161,7 @@ Every route is under `/api`. Errors always have the shape `{ "error": { "code", 
 | GET | `/orders`, `/orders/:id` | logged in | Your own orders |
 | POST | `/orders/:id/cancel` | logged in | Cancel your order while it is placed |
 | GET | `/images/:id` | anyone | An uploaded image |
-| POST, PUT, DELETE | `/admin/products[/:id]` | admin | Manage products. `imageUrl` is an http(s) URL or an uploaded image's `/api/images/:id` |
+| POST, PUT, DELETE | `/admin/products[/:id]` | admin | Manage products. `images` is a list of 1–15 http(s) URLs or uploaded images' `/api/images/:id`, cover first. Products also return the cover as `imageUrl` |
 | POST | `/admin/images` | admin | Upload an image: the raw file as the body. Returns `{ url }` |
 | GET | `/admin/orders?status=&page=`, `/admin/orders/:id` | admin | All orders |
 | PATCH | `/admin/orders/:id/status` | admin | Change status: `{ status }` |

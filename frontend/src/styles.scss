@@ -97,3 +97,9 @@ body {
 .mat-mdc-header-cell {
   text-transform: uppercase;
 }
+
+// Full-screen image viewer on the product page.
+.gallery-lightbox .mat-mdc-dialog-surface {
+  background: #09090b;
+  border-radius: 0;
+}

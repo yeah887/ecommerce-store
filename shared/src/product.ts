@@ -9,7 +9,10 @@ export interface Product {
   description: string;
   priceCents: number;
   category: Category;
+  /** The cover image, the same as `images[0]`. */
   imageUrl: string;
+  /** 1 to PRODUCT_LIMITS.maxImages images, cover first. */
+  images: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -20,13 +23,15 @@ export interface ProductInput {
   description: string;
   priceCents: number;
   category: Category;
-  imageUrl: string;
+  /** Cover first. Each is an http(s) URL or an uploaded image's `/api/images/:id`. */
+  images: string[];
 }
 
 export const PRODUCT_LIMITS = {
   nameMaxLength: 120,
   descriptionMaxLength: 2000,
   imageUrlMaxLength: 500,
+  maxImages: 15,
   /** €100,000.00 */
   maxPriceCents: 10_000_000,
 } as const;

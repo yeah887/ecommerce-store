@@ -15,7 +15,7 @@ describe('admin order management', () => {
 
   beforeAll(async () => {
     const [p] = await productModel(ctx.db).insertMany([
-      { name: 'Mug', description: 'A mug', priceCents: 1250, category: 'home', imageUrl: 'https://example.com/m.jpg' },
+      { name: 'Mug', description: 'A mug', priceCents: 1250, category: 'home', images: ['https://example.com/m.jpg'] },
     ]);
     productId = String(p._id);
     admin = request.agent(ctx.app);

@@ -9,7 +9,7 @@ const lamp = {
   description: 'A warm desk lamp',
   priceCents: 3450,
   category: 'home',
-  imageUrl: 'https://example.com/lamp.jpg',
+  images: ['https://example.com/lamp.jpg'],
 };
 
 describe('admin product management', () => {
@@ -65,6 +65,17 @@ describe('admin product management', () => {
     expect(listed.body.items.map((p: Product) => p.id)).toContain(created.id);
   });
 
+  it('keeps up to 15 images in order, with the first as the cover', async () => {
+    const images = Array.from({ length: 15 }, (_, i) => `https://example.com/${i}.jpg`);
+
+    const res = await admin.post('/api/admin/products').send({ ...lamp, name: 'Gallery', images });
+
+    expect(res.status).toBe(201);
+    expect(res.body.images).toEqual(images);
+    expect(res.body.imageUrl).toBe(images[0]);
+    expect((await request(ctx.app).get(`/api/products/${res.body.id}`)).body.images).toEqual(images);
+  });
+
   it('updates a product', async () => {
     const res = await admin
       .put(`/api/admin/products/${existingId}`)
@@ -114,9 +125,14 @@ describe('admin product management', () => {
     [{ priceCents: '1000' }, 'priceCents'],
     [{ priceCents: 10_000_001 }, 'priceCents'],
     [{ category: 'weapons' }, 'category'],
-    [{ imageUrl: 'not a url' }, 'imageUrl'],
-    [{ imageUrl: 'javascript:alert(1)' }, 'imageUrl'],
-    [{ imageUrl: '/api/images/not-an-id' }, 'imageUrl'],
+    [{ images: ['not a url'] }, 'images'],
+    [{ images: ['javascript:alert(1)'] }, 'images'],
+    [{ images: ['/api/images/not-an-id'] }, 'images'],
+    [{ images: [] }, 'images'],
+    [{ images: 'https://example.com/a.jpg' }, 'images'],
+    [{ images: ['https://example.com/a.jpg', 42] }, 'images'],
+    [{ images: ['https://example.com/a.jpg', 'https://example.com/a.jpg'] }, 'images'],
+    [{ images: Array.from({ length: 16 }, (_, i) => `https://example.com/${i}.jpg`) }, 'images'],
   ])('rejects invalid input %o', async (change, field) => {
     const create = await admin.post('/api/admin/products').send({ ...lamp, ...change });
     const update = await admin.put(`/api/admin/products/${existingId}`).send({ ...lamp, ...change });

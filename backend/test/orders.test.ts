@@ -15,8 +15,8 @@ const address = {
 
 async function insertProducts(ctx: TestContext) {
   const [lamp, mug] = await productModel(ctx.db).insertMany([
-    { name: 'Lamp', description: 'A lamp', priceCents: 4999, category: 'home', imageUrl: 'https://example.com/l.jpg' },
-    { name: 'Mug', description: 'A mug', priceCents: 1250, category: 'home', imageUrl: 'https://example.com/m.jpg' },
+    { name: 'Lamp', description: 'A lamp', priceCents: 4999, category: 'home', images: ['https://example.com/l.jpg'] },
+    { name: 'Mug', description: 'A mug', priceCents: 1250, category: 'home', images: ['https://example.com/m.jpg'] },
   ]);
   return { lamp: String(lamp._id), mug: String(mug._id) };
 }

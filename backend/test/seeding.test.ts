@@ -46,4 +46,30 @@ describe('seeding', () => {
 
     expect(await productCount()).toBe(remaining);
   });
+
+  it('turns the single imageUrl of older products into their image list', async () => {
+    const { insertedId } = await ctx.db.collection('products').insertOne({
+      name: 'Old Lamp',
+      description: 'From before galleries',
+      priceCents: 1000,
+      category: 'home',
+      imageUrl: 'https://example.com/old.jpg',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    await prepareAgain();
+    await prepareAgain();
+
+    const raw = await ctx.db.collection('products').findOne({ _id: insertedId });
+    expect(raw?.images).toEqual(['https://example.com/old.jpg']);
+    expect(raw).not.toHaveProperty('imageUrl');
+    const res = await request(ctx.app).get(`/api/products/${insertedId}`);
+    expect(res.body).toMatchObject({ imageUrl: 'https://example.com/old.jpg', images: ['https://example.com/old.jpg'] });
+  });
+
+  it('seeds several images per sample product', async () => {
+    const res = await request(ctx.app).get('/api/products').query({ pageSize: 1 });
+    expect((res.body as Page<Product>).items[0].images.length).toBeGreaterThan(1);
+  });
 });

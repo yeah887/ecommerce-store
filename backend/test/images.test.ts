@@ -93,50 +93,55 @@ describe('image upload', () => {
   });
 
   describe('as product images', () => {
-    it('accepts an uploaded image and rejects a missing one', async () => {
-      const { url } = (await upload(admin, PNG)).body;
+    const uploadUrl = async (data = PNG) => (await upload(admin, data)).body.url as string;
+    const status = async (url: string) => (await request(ctx.app).get(url)).status;
 
-      const created = await admin.post('/api/admin/products').send({ ...lamp, imageUrl: url });
+    it('accepts uploaded images and rejects a missing one', async () => {
+      const [a, b] = [await uploadUrl(), await uploadUrl(JPEG)];
+
+      const created = await admin.post('/api/admin/products').send({ ...lamp, images: [a, 'https://example.com/x.jpg', b] });
       expect(created.status).toBe(201);
-      expect(created.body.imageUrl).toBe(url);
+      expect(created.body.images).toEqual([a, 'https://example.com/x.jpg', b]);
 
       const missing = await admin
         .post('/api/admin/products')
-        .send({ ...lamp, imageUrl: '/api/images/64b7f0000000000000000000' });
+        .send({ ...lamp, images: [a, '/api/images/64b7f0000000000000000000'] });
       expect(missing.status).toBe(400);
-      expect(missing.body.error.fields).toHaveProperty('imageUrl');
+      expect(missing.body.error.fields).toHaveProperty('images');
     });
 
-    it.each(['/api/images/../health', '/api/images/zzz', '/etc/passwd'])('rejects the path %s', async (imageUrl) => {
-      const res = await admin.post('/api/admin/products').send({ ...lamp, imageUrl });
+    it.each(['/api/images/../health', '/api/images/zzz', '/etc/passwd'])('rejects the path %s', async (url) => {
+      const res = await admin.post('/api/admin/products').send({ ...lamp, images: [url] });
 
       expect(res.status).toBe(400);
-      expect(res.body.error.fields).toHaveProperty('imageUrl');
+      expect(res.body.error.fields).toHaveProperty('images');
     });
 
-    it('deletes an uploaded image when the product gets a different one', async () => {
-      const first = (await upload(admin, PNG)).body.url as string;
-      const product = (await admin.post('/api/admin/products').send({ ...lamp, imageUrl: first })).body as Product;
+    it('deletes only the uploaded images an update removes', async () => {
+      const [kept, removed, added] = [await uploadUrl(), await uploadUrl(), await uploadUrl(JPEG)];
+      const product = (await admin.post('/api/admin/products').send({ ...lamp, images: [kept, removed] })).body as Product;
 
-      const second = (await upload(admin, JPEG)).body.url as string;
-      const res = await admin.put(`/api/admin/products/${product.id}`).send({ ...lamp, imageUrl: second });
+      const res = await admin.put(`/api/admin/products/${product.id}`).send({ ...lamp, images: [added, kept] });
 
       expect(res.status).toBe(200);
-      expect(res.body.imageUrl).toBe(second);
-      expect((await request(ctx.app).get(first)).status).toBe(404);
-      expect((await request(ctx.app).get(second)).status).toBe(200);
+      expect(res.body.images).toEqual([added, kept]);
+      expect(res.body.imageUrl).toBe(added);
+      expect(await status(removed)).toBe(404);
+      expect(await status(kept)).toBe(200);
+      expect(await status(added)).toBe(200);
     });
 
-    it('deletes an uploaded image with its product, unless another product still uses it', async () => {
-      const url = (await upload(admin, PNG)).body.url as string;
-      const a = (await admin.post('/api/admin/products').send({ ...lamp, imageUrl: url })).body as Product;
-      const b = (await admin.post('/api/admin/products').send({ ...lamp, imageUrl: url })).body as Product;
+    it("deletes a product's uploaded images with it, unless another product still uses them", async () => {
+      const [shared, own] = [await uploadUrl(), await uploadUrl()];
+      const a = (await admin.post('/api/admin/products').send({ ...lamp, images: [shared, own] })).body as Product;
+      const b = (await admin.post('/api/admin/products').send({ ...lamp, images: [shared] })).body as Product;
 
       await admin.delete(`/api/admin/products/${a.id}`);
-      expect((await request(ctx.app).get(url)).status).toBe(200);
+      expect(await status(own)).toBe(404);
+      expect(await status(shared)).toBe(200);
 
       await admin.delete(`/api/admin/products/${b.id}`);
-      expect((await request(ctx.app).get(url)).status).toBe(404);
+      expect(await status(shared)).toBe(404);
     });
   });
 });
