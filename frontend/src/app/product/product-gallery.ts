@@ -1,13 +1,15 @@
 import { Component, inject, input, linkedSignal } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { I18n } from '../i18n/i18n';
 import { GalleryLightbox, type LightboxData } from './gallery-lightbox';
 import { swipeDirection } from './swipe';
+import { TranslatePipe } from '../i18n/translate.pipe';
 
 /** A product's images: the current one large, thumbnails below, and a full-screen view on click. */
 @Component({
   selector: 'app-product-gallery',
-  imports: [MatIconModule],
+  imports: [MatIconModule, TranslatePipe],
   host: {
     class: 'block',
     '(keydown.arrowleft)': 'step(-1)',
@@ -18,20 +20,20 @@ import { swipeDirection } from './swipe';
       <button
         type="button"
         class="block w-full cursor-zoom-in"
-        [attr.aria-label]="'View image ' + (index() + 1) + ' of ' + images().length + ' full screen'"
+        [attr.aria-label]="'gallery.viewFullScreen' | t: { n: index() + 1, total: images().length }"
         (click)="openLightbox()"
       >
         <img
           class="aspect-[4/3] w-full object-cover"
           [src]="images()[index()]"
-          [alt]="name() + (images().length > 1 ? ', image ' + (index() + 1) + ' of ' + images().length : '')"
+          [alt]="images().length > 1 ? ('gallery.imageAlt' | t: { name: name(), n: index() + 1, total: images().length }) : name()"
         />
       </button>
       @if (images().length > 1) {
         <button
           type="button"
           class="absolute top-1/2 left-3 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-zinc-900 shadow-sm ring-1 ring-zinc-900/5 hover:bg-white"
-          aria-label="Previous image"
+          [attr.aria-label]="'gallery.previous' | t"
           (click)="step(-1)"
         >
           <mat-icon>chevron_left</mat-icon>
@@ -39,7 +41,7 @@ import { swipeDirection } from './swipe';
         <button
           type="button"
           class="absolute top-1/2 right-3 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-zinc-900 shadow-sm ring-1 ring-zinc-900/5 hover:bg-white"
-          aria-label="Next image"
+          [attr.aria-label]="'gallery.next' | t"
           (click)="step(1)"
         >
           <mat-icon>chevron_right</mat-icon>
@@ -54,14 +56,14 @@ import { swipeDirection } from './swipe';
     </div>
 
     @if (images().length > 1) {
-      <ul class="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-6" aria-label="Product images">
+      <ul class="mt-3 grid grid-cols-5 gap-2 sm:grid-cols-6" [attr.aria-label]="'gallery.images' | t">
         @for (url of images(); track url; let i = $index) {
           <li>
             <button
               type="button"
               class="block w-full overflow-hidden rounded-xl ring-2 transition"
               [class]="i === index() ? 'ring-zinc-900' : 'opacity-70 ring-transparent hover:opacity-100'"
-              [attr.aria-label]="'Show image ' + (i + 1)"
+              [attr.aria-label]="'gallery.show' | t: { n: i + 1 }"
               [attr.aria-current]="i === index() ? 'true' : null"
               (click)="index.set(i)"
             >
@@ -75,6 +77,7 @@ import { swipeDirection } from './swipe';
 })
 export class ProductGallery {
   private readonly dialog = inject(MatDialog);
+  private readonly i18n = inject(I18n);
 
   readonly images = input.required<string[]>();
   readonly name = input.required<string>();
@@ -102,7 +105,7 @@ export class ProductGallery {
       maxHeight: '100dvh',
       panelClass: 'gallery-lightbox',
       disableClose: true,
-      ariaLabel: `${this.name()} images`,
+      ariaLabel: this.i18n.t('gallery.imagesOf', { name: this.name() }),
     });
     ref.afterClosed().subscribe((index) => {
       if (index !== undefined) this.index.set(index);

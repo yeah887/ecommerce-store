@@ -1,10 +1,10 @@
 @if (notFound()) {
-  <app-not-found heading="Product not found" message="It may have been deleted." />
+  <app-not-found [heading]="'product.notFoundTitle' | t" [message]="'admin.productMayBeDeleted' | t" />
 } @else {
   <a routerLink="/admin/products" class="inline-flex items-center gap-1 rounded text-sm font-medium text-zinc-500 hover:text-zinc-900">
-    <mat-icon class="icon-18" aria-hidden="true">arrow_back</mat-icon> Products
+    <mat-icon class="icon-18" aria-hidden="true">arrow_back</mat-icon> {{ 'admin.products' | t }}
   </a>
-  <h1 class="page-title mt-4">{{ id() ? 'Edit product' : 'New product' }}</h1>
+  <h1 class="page-title mt-4">{{ (id() ? 'admin.editProduct' : 'admin.newProduct') | t }}</h1>
 
   <div class="mt-6 mb-4 h-1 overflow-hidden rounded-full">
     @if (loading() || saving() || uploading()) {
@@ -19,24 +19,24 @@
       }
 
       <mat-form-field appearance="outline">
-        <mat-label>Name</mat-label>
+        <mat-label>{{ 'admin.colName' | t }}</mat-label>
         <input matInput formControlName="name" name="name" />
         @if (form.controls.name.hasError('required')) {
-          <mat-error>Name is required</mat-error>
+          <mat-error>{{ 'admin.nameRequired' | t }}</mat-error>
         } @else if (form.controls.name.hasError('maxlength')) {
-          <mat-error>At most {{ limits.nameMaxLength }} characters</mat-error>
+          <mat-error>{{ 'common.maxChars' | t: { max: limits.nameMaxLength } }}</mat-error>
         } @else if (form.controls.name.hasError('server')) {
           <mat-error>{{ form.controls.name.getError('server') }}</mat-error>
         }
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>Description</mat-label>
+        <mat-label>{{ 'admin.description' | t }}</mat-label>
         <textarea matInput formControlName="description" name="description" rows="5"></textarea>
         @if (form.controls.description.hasError('required')) {
-          <mat-error>Description is required</mat-error>
+          <mat-error>{{ 'admin.descriptionRequired' | t }}</mat-error>
         } @else if (form.controls.description.hasError('maxlength')) {
-          <mat-error>At most {{ limits.descriptionMaxLength }} characters</mat-error>
+          <mat-error>{{ 'common.maxChars' | t: { max: limits.descriptionMaxLength } }}</mat-error>
         } @else if (form.controls.description.hasError('server')) {
           <mat-error>{{ form.controls.description.getError('server') }}</mat-error>
         }
@@ -44,27 +44,27 @@
 
       <div class="grid gap-x-4 sm:grid-cols-2">
         <mat-form-field appearance="outline">
-          <mat-label>Price</mat-label>
+          <mat-label>{{ 'admin.price' | t }}</mat-label>
           <span matTextPrefix>€&nbsp;</span>
           <input matInput formControlName="price" name="price" inputmode="decimal" placeholder="12.99" />
           @if (form.controls.price.hasError('required')) {
-            <mat-error>Price is required</mat-error>
+            <mat-error>{{ 'admin.priceRequired' | t }}</mat-error>
           } @else if (form.controls.price.hasError('price')) {
-            <mat-error>{{ form.controls.price.getError('price') }}</mat-error>
+            <mat-error>{{ form.controls.price.getError('price') | t }}</mat-error>
           } @else if (form.controls.price.hasError('server')) {
             <mat-error>{{ form.controls.price.getError('server') }}</mat-error>
           }
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Category</mat-label>
+          <mat-label>{{ 'category.label' | t }}</mat-label>
           <mat-select formControlName="category" name="category">
             @for (category of categories; track category) {
-              <mat-option [value]="category">{{ categoryLabels[category] }}</mat-option>
+              <mat-option [value]="category">{{ category | category }}</mat-option>
             }
           </mat-select>
           @if (form.controls.category.hasError('required')) {
-            <mat-error>Choose a category</mat-error>
+            <mat-error>{{ 'admin.chooseCategory' | t }}</mat-error>
           } @else if (form.controls.category.hasError('server')) {
             <mat-error>{{ form.controls.category.getError('server') }}</mat-error>
           }
@@ -73,21 +73,21 @@
 
       <section class="mt-2" aria-labelledby="images-heading">
         <div class="flex items-baseline justify-between gap-4">
-          <h2 id="images-heading" class="section-title">Images</h2>
+          <h2 id="images-heading" class="section-title">{{ 'admin.images' | t }}</h2>
           <span class="text-sm text-zinc-500 tabular-nums">{{ images().length }} / {{ limits.maxImages }}</span>
         </div>
         <p class="mt-1 text-sm text-zinc-500">
-          The first image is the cover. Upload JPEG, PNG, WebP or GIF files up to 5 MB, or add a link.
+          {{ 'admin.imagesHint' | t }}
         </p>
 
         <ul class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           @for (url of images(); track url; let i = $index, first = $first, last = $last) {
             <li class="overflow-hidden rounded-xl border border-zinc-200 bg-white">
               <div class="relative bg-zinc-100">
-                <img class="aspect-[4/3] w-full object-cover" [src]="url" [alt]="'Image ' + (i + 1)" />
+                <img class="aspect-[4/3] w-full object-cover" [src]="url" [alt]="'admin.imageAlt' | t: { n: i + 1 }" />
                 @if (first) {
                   <span class="absolute top-2 left-2 rounded-full bg-zinc-900/80 px-2 py-0.5 text-xs font-medium text-white">
-                    Cover
+                    {{ 'admin.cover' | t }}
                   </span>
                 }
               </div>
@@ -95,7 +95,7 @@
                 <button
                   type="button"
                   class="grid size-8 place-items-center rounded-lg text-zinc-600 hover:bg-zinc-100 disabled:text-zinc-300 disabled:hover:bg-transparent"
-                  [attr.aria-label]="'Move image ' + (i + 1) + ' earlier'"
+                  [attr.aria-label]="'admin.moveEarlier' | t: { n: i + 1 }"
                   [disabled]="first"
                   (click)="moveImage(i, -1)"
                 >
@@ -104,7 +104,7 @@
                 <button
                   type="button"
                   class="grid size-8 place-items-center rounded-lg text-zinc-500 hover:bg-red-50 hover:text-red-600"
-                  [attr.aria-label]="'Remove image ' + (i + 1)"
+                  [attr.aria-label]="'admin.removeImage' | t: { n: i + 1 }"
                   (click)="removeImage(i)"
                 >
                   <mat-icon class="icon-18">delete</mat-icon>
@@ -112,7 +112,7 @@
                 <button
                   type="button"
                   class="grid size-8 place-items-center rounded-lg text-zinc-600 hover:bg-zinc-100 disabled:text-zinc-300 disabled:hover:bg-transparent"
-                  [attr.aria-label]="'Move image ' + (i + 1) + ' later'"
+                  [attr.aria-label]="'admin.moveLater' | t: { n: i + 1 }"
                   [disabled]="last"
                   (click)="moveImage(i, 1)"
                 >
@@ -130,7 +130,7 @@
                 (click)="fileInput.click()"
               >
                 <mat-icon class="!text-zinc-400">{{ uploading() ? 'hourglass_top' : 'add_photo_alternate' }}</mat-icon>
-                {{ uploading() ? 'Uploading…' : 'Upload images' }}
+                {{ (uploading() ? 'admin.uploading' : 'admin.uploadImages') | t }}
               </button>
             </li>
           }
@@ -141,8 +141,8 @@
           <input
             type="url"
             class="h-10 min-w-0 flex-1 rounded-xl border border-zinc-300 bg-white px-3 text-sm placeholder:text-zinc-400 disabled:bg-zinc-50"
-            placeholder="https://… link to an image"
-            aria-label="Image link"
+            [placeholder]="'admin.imageLinkPlaceholder' | t"
+            [attr.aria-label]="'admin.imageLink' | t"
             [value]="newImageUrl()"
             [disabled]="images().length >= limits.maxImages"
             (input)="newImageUrl.set($any($event.target).value)"
@@ -155,7 +155,7 @@
             [disabled]="!newImageUrl().trim() || images().length >= limits.maxImages"
             (click)="addImageUrl()"
           >
-            Add link
+            {{ 'admin.addLink' | t }}
           </button>
         </div>
 
@@ -166,11 +166,10 @@
 
       <div class="mt-6 flex gap-2 border-t border-zinc-200 pt-6">
         <button matButton="filled" type="submit" [disabled]="saving() || loading() || uploading()">
-          {{ id() ? 'Save changes' : 'Create product' }}
+          {{ (id() ? 'admin.saveChanges' : 'admin.createProduct') | t }}
         </button>
-        <a matButton routerLink="/admin/products">Cancel</a>
+        <a matButton routerLink="/admin/products">{{ 'common.cancel' | t }}</a>
       </div>
     </form>
-
   </div>
 }

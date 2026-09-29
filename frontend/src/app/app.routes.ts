@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { adminGuard, guestOnlyGuard, loggedInGuard } from './auth/guards';
 
+// Titles are translation keys, shown by TranslatedTitleStrategy.
 export const routes: Routes = [
   {
     path: '',
@@ -13,30 +14,30 @@ export const routes: Routes = [
   },
   {
     path: 'cart',
-    title: 'Your cart · Store',
+    title: 'title.cart',
     loadComponent: () => import('./cart/cart-page').then((m) => m.CartPage),
   },
   {
     path: 'checkout',
-    title: 'Checkout · Store',
+    title: 'title.checkout',
     canActivate: [loggedInGuard],
     loadComponent: () => import('./checkout/checkout-page').then((m) => m.CheckoutPage),
   },
   {
     path: 'checkout/confirmation/:id',
-    title: 'Order placed · Store',
+    title: 'title.confirmation',
     canActivate: [loggedInGuard],
     loadComponent: () => import('./checkout/confirmation-page').then((m) => m.ConfirmationPage),
   },
   {
     path: 'orders',
-    title: 'My orders · Store',
+    title: 'title.orders',
     canActivate: [loggedInGuard],
     loadComponent: () => import('./orders/orders-page').then((m) => m.OrdersPage),
   },
   {
     path: 'orders/:id',
-    title: 'Order · Store',
+    title: 'title.order',
     canActivate: [loggedInGuard],
     loadComponent: () => import('./orders/order-page').then((m) => m.OrderPage),
   },
@@ -48,51 +49,51 @@ export const routes: Routes = [
       { path: '', pathMatch: 'full', redirectTo: 'products' },
       {
         path: 'products',
-        title: 'Products · Admin · Store',
+        title: 'title.adminProducts',
         loadComponent: () => import('./admin/admin-products-page').then((m) => m.AdminProductsPage),
       },
       {
         path: 'products/new',
-        title: 'New product · Admin · Store',
+        title: 'title.adminNewProduct',
         loadComponent: () => import('./admin/product-form-page').then((m) => m.ProductFormPage),
       },
       {
         path: 'products/:id/edit',
-        title: 'Edit product · Admin · Store',
+        title: 'title.adminEditProduct',
         loadComponent: () => import('./admin/product-form-page').then((m) => m.ProductFormPage),
       },
       {
         path: 'orders',
-        title: 'Orders · Admin · Store',
+        title: 'title.adminOrders',
         loadComponent: () => import('./admin/admin-orders-page').then((m) => m.AdminOrdersPage),
       },
       {
         path: 'orders/:id',
-        title: 'Order · Admin · Store',
+        title: 'title.adminOrder',
         loadComponent: () => import('./admin/admin-order-page').then((m) => m.AdminOrderPage),
       },
     ],
   },
   {
     path: 'login',
-    title: 'Log in · Store',
+    title: 'title.login',
     canActivate: [guestOnlyGuard],
     loadComponent: () => import('./auth/login-page').then((m) => m.LoginPage),
   },
   {
     path: 'register',
-    title: 'Create an account · Store',
+    title: 'title.register',
     canActivate: [guestOnlyGuard],
     loadComponent: () => import('./auth/register-page').then((m) => m.RegisterPage),
   },
   {
     path: 'status',
-    title: 'System status · Store',
+    title: 'title.status',
     loadComponent: () => import('./health/health-page').then((m) => m.HealthPage),
   },
   {
     path: '**',
-    title: 'Page not found · Store',
+    title: 'title.notFound',
     loadComponent: () => import('./not-found/not-found').then((m) => m.NotFound),
   },
 ];

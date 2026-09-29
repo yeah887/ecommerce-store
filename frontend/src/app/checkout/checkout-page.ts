@@ -16,8 +16,11 @@ import {
 } from '@store/shared';
 import { AuthService } from '../auth/auth.service';
 import { CartStore, type CartLine } from '../cart/cart-store';
+import type { TranslationKey } from '../i18n/en';
+import { I18n } from '../i18n/i18n';
 import { apiError } from '../shared/api-error';
 import { PricePipe } from '../shared/price.pipe';
+import { TranslatePipe } from '../i18n/translate.pipe';
 
 type AddressField = keyof ShippingAddress;
 
@@ -38,6 +41,7 @@ interface RejectedLine {
     MatInputModule,
     MatProgressBarModule,
     PricePipe,
+    TranslatePipe,
   ],
   templateUrl: './checkout-page.html',
 })
@@ -45,6 +49,7 @@ export class CheckoutPage {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   protected readonly cart = inject(CartStore);
+  private readonly i18n = inject(I18n);
 
   private readonly max = SHIPPING_FIELD_MAX_LENGTH;
   protected readonly form = inject(FormBuilder).nonNullable.group({
@@ -54,12 +59,12 @@ export class CheckoutPage {
     city: ['', [Validators.required, Validators.maxLength(this.max.city)]],
     country: ['', [Validators.required, Validators.maxLength(this.max.country)]],
   });
-  protected readonly addressFields: { key: AddressField; label: string; autocomplete: string }[] = [
-    { key: 'name', label: 'Full name', autocomplete: 'shipping name' },
-    { key: 'street', label: 'Street and number', autocomplete: 'shipping street-address' },
-    { key: 'postalCode', label: 'Postal code', autocomplete: 'shipping postal-code' },
-    { key: 'city', label: 'City', autocomplete: 'shipping address-level2' },
-    { key: 'country', label: 'Country', autocomplete: 'shipping country-name' },
+  protected readonly addressFields: { key: AddressField; label: TranslationKey; autocomplete: string }[] = [
+    { key: 'name', label: 'address.name', autocomplete: 'shipping name' },
+    { key: 'street', label: 'address.street', autocomplete: 'shipping street-address' },
+    { key: 'postalCode', label: 'address.postalCode', autocomplete: 'shipping postal-code' },
+    { key: 'city', label: 'address.city', autocomplete: 'shipping address-level2' },
+    { key: 'country', label: 'address.country', autocomplete: 'shipping country-name' },
   ];
 
   protected readonly placing = signal(false);
@@ -106,9 +111,10 @@ export class CheckoutPage {
 
     if (body?.code === 'invalid_lines') {
       const rejected: RejectedLine[] = [];
-      for (const [key, reason] of Object.entries(fields)) {
+      for (const key of Object.keys(fields)) {
         const line = sentLines[Number(key.split('.')[1])];
-        if (line) rejected.push({ line, reason });
+        // The cart already prevents duplicates and invalid quantities, so a refused line has gone from the store.
+        if (line) rejected.push({ line, reason: this.i18n.t('checkout.lineUnavailable') });
       }
       this.rejected.set(rejected);
     }
@@ -119,6 +125,6 @@ export class CheckoutPage {
         control?.markAsTouched();
       }
     }
-    this.error.set(body?.message ?? "We couldn't place your order. Please try again.");
+    this.error.set(this.i18n.errorMessage(err, 'checkout.failed'));
   }
 }

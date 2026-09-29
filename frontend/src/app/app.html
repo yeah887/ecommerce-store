@@ -13,7 +13,7 @@
           type="button"
           class="flex items-center gap-2 rounded-full py-1 pr-2 pl-1 text-sm font-medium text-zinc-700 hover:bg-zinc-100 sm:pr-3"
           [matMenuTriggerFor]="userMenu"
-          [attr.aria-label]="'Account menu for ' + user.name"
+          [attr.aria-label]="'header.accountMenu' | t: { name: user.name }"
         >
           <span class="grid size-8 place-items-center rounded-full bg-accent-100 text-sm font-semibold text-accent-700">
             {{ user.name.charAt(0).toUpperCase() }}
@@ -28,39 +28,67 @@
           </div>
           <a mat-menu-item routerLink="/orders">
             <mat-icon>receipt_long</mat-icon>
-            <span>My orders</span>
+            <span>{{ 'nav.myOrders' | t }}</span>
           </a>
           @if (auth.isAdmin()) {
             <a mat-menu-item routerLink="/admin/products">
               <mat-icon>inventory_2</mat-icon>
-              <span>Manage products</span>
+              <span>{{ 'nav.manageProducts' | t }}</span>
             </a>
             <a mat-menu-item routerLink="/admin/orders">
               <mat-icon>local_shipping</mat-icon>
-              <span>Manage orders</span>
+              <span>{{ 'nav.manageOrders' | t }}</span>
             </a>
           }
           <button mat-menu-item (click)="logout()">
             <mat-icon>logout</mat-icon>
-            <span>Log out</span>
+            <span>{{ 'nav.logout' | t }}</span>
           </button>
         </mat-menu>
       } @else {
         <a routerLink="/login" class="rounded-lg px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900">
-          Log in
+          {{ 'nav.login' | t }}
         </a>
         <a
           routerLink="/register"
           class="rounded-lg bg-zinc-900 px-3.5 py-2 text-sm font-medium text-white hover:bg-zinc-700 max-sm:hidden"
         >
-          Sign up
+          {{ 'nav.signup' | t }}
         </a>
       }
+
+      <button
+        type="button"
+        class="flex items-center gap-1 rounded-full px-2 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+        [matMenuTriggerFor]="languageMenu"
+        [attr.aria-label]="'header.language' | t: { language: currentLanguageName() }"
+      >
+        <mat-icon class="icon-20" aria-hidden="true">language</mat-icon>
+        <span class="uppercase max-sm:hidden">{{ i18n.language() }}</span>
+      </button>
+      <mat-menu #languageMenu="matMenu" xPosition="before">
+        @for (language of i18n.languages; track language.code) {
+          <button
+            mat-menu-item
+            role="menuitemradio"
+            [attr.aria-checked]="language.code === i18n.language()"
+            [attr.lang]="language.code"
+            (click)="i18n.use(language.code)"
+          >
+            <span class="flex w-full items-center justify-between gap-6">
+              {{ language.name }}
+              @if (language.code === i18n.language()) {
+                <mat-icon class="!m-0 icon-18 !text-accent-600" aria-hidden="true">check</mat-icon>
+              }
+            </span>
+          </button>
+        }
+      </mat-menu>
 
       <a
         routerLink="/cart"
         class="relative grid size-10 place-items-center rounded-full text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900"
-        [attr.aria-label]="'Cart, ' + cart.count() + (cart.count() === 1 ? ' item' : ' items')"
+        [attr.aria-label]="'header.cart' | tn: cart.count()"
       >
         <mat-icon aria-hidden="true">shopping_bag</mat-icon>
         @if (cart.count() > 0) {
@@ -83,8 +111,8 @@
     <div
       class="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"
     >
-      <p>A demo store: payment is simulated and nothing is really sold.</p>
-      <a routerLink="/status" class="hover:text-zinc-900">System status</a>
+      <p>{{ 'footer.demo' | t }}</p>
+      <a routerLink="/status" class="hover:text-zinc-900">{{ 'footer.status' | t }}</a>
     </div>
   </footer>
 </div>

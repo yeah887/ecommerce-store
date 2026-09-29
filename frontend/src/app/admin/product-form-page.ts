@@ -19,7 +19,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { firstValueFrom } from 'rxjs';
 import {
   CATEGORIES,
-  CATEGORY_LABELS,
   IMAGE_UPLOAD,
   PRODUCT_LIMITS,
   isProductImageUrl,
@@ -29,22 +28,25 @@ import {
   type UploadedImage,
 } from '@store/shared';
 import { NotFound } from '../not-found/not-found';
+import type { TranslationKey } from '../i18n/en';
+import { I18n } from '../i18n/i18n';
 import { apiError } from '../shared/api-error';
 import { centsToEuroInput, parseEuroToCents } from './money';
+import { CategoryPipe, TranslatePipe } from '../i18n/translate.pipe';
 
 type Field = 'name' | 'description' | 'price' | 'category' | 'images';
 
 function euroPrice(control: AbstractControl<string>): ValidationErrors | null {
   if (!control.value) return null;
   const cents = parseEuroToCents(control.value);
-  if (cents === null) return { price: 'Enter an amount like 12.99' };
-  if (cents < 1 || cents > PRODUCT_LIMITS.maxPriceCents) return { price: 'Price must be between €0.01 and €100,000' };
+  if (cents === null) return { price: 'admin.priceFormat' satisfies TranslationKey };
+  if (cents < 1 || cents > PRODUCT_LIMITS.maxPriceCents) return { price: 'admin.priceRange' satisfies TranslationKey };
   return null;
 }
 
 function imageCount(control: AbstractControl<string[]>): ValidationErrors | null {
-  if (control.value.length === 0) return { images: 'Add at least one image' };
-  if (control.value.length > PRODUCT_LIMITS.maxImages) return { images: `At most ${PRODUCT_LIMITS.maxImages} images` };
+  if (control.value.length === 0) return { images: 'admin.imagesRequired' satisfies TranslationKey };
+  if (control.value.length > PRODUCT_LIMITS.maxImages) return { images: 'admin.imagesMax' satisfies TranslationKey };
   return null;
 }
 
@@ -61,6 +63,8 @@ function imageCount(control: AbstractControl<string[]>): ValidationErrors | null
     MatProgressBarModule,
     MatSelectModule,
     NotFound,
+    CategoryPipe,
+    TranslatePipe,
   ],
   templateUrl: './product-form-page.html',
 })
@@ -68,12 +72,12 @@ export class ProductFormPage implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly i18n = inject(I18n);
 
   /** Bound from the `:id` route parameter; absent when creating. */
   readonly id = input<string>();
 
   protected readonly categories = CATEGORIES;
-  protected readonly categoryLabels = CATEGORY_LABELS;
   protected readonly limits = PRODUCT_LIMITS;
   protected readonly imageTypes = IMAGE_UPLOAD.types.join(',');
 
@@ -111,7 +115,7 @@ export class ProductFormPage implements OnInit {
       this.images.set(product.images);
     } catch (err) {
       if (err instanceof HttpErrorResponse && err.status === 404) this.notFound.set(true);
-      else this.error.set("Couldn't load the product.");
+      else this.error.set(this.i18n.t('admin.loadProductFailed'));
     } finally {
       this.loading.set(false);
     }
@@ -122,7 +126,8 @@ export class ProductFormPage implements OnInit {
     const control = this.form.controls.images;
     if (this.imageError()) return this.imageError();
     if (!control.touched || !control.errors) return null;
-    return control.getError('server') ?? control.getError('images');
+    if (control.hasError('server')) return control.getError('server');
+    return this.i18n.t(control.getError('images') as TranslationKey, { max: PRODUCT_LIMITS.maxImages });
   }
 
   private setImages(images: string[]): void {
@@ -148,11 +153,11 @@ export class ProductFormPage implements OnInit {
     const url = this.newImageUrl().trim();
     if (!url) return;
     if (url.length > PRODUCT_LIMITS.imageUrlMaxLength || !isProductImageUrl(url)) {
-      this.imageError.set('Enter a valid http(s) link to an image');
+      this.imageError.set(this.i18n.t('admin.imageLinkInvalid'));
     } else if (this.images().includes(url)) {
-      this.imageError.set('That image is already in the list');
+      this.imageError.set(this.i18n.t('admin.imageDuplicate'));
     } else if (this.images().length >= PRODUCT_LIMITS.maxImages) {
-      this.imageError.set(`A product can have at most ${PRODUCT_LIMITS.maxImages} images`);
+      this.imageError.set(this.i18n.t('admin.imagesFull', { max: PRODUCT_LIMITS.maxImages }));
     } else {
       this.imageError.set(null);
       this.setImages([...this.images(), url]);
@@ -171,7 +176,7 @@ export class ProductFormPage implements OnInit {
     const problems: string[] = [];
     const room = PRODUCT_LIMITS.maxImages - this.images().length;
     if (files.length > room) {
-      problems.push(`Only ${room} more ${room === 1 ? 'image fits' : 'images fit'}, so ${files.length - room} were skipped.`);
+      problems.push(this.i18n.tn('admin.uploadSkipped', room, { skipped: files.length - room }));
     }
 
     this.imageError.set(null);
@@ -179,11 +184,11 @@ export class ProductFormPage implements OnInit {
     try {
       for (const file of files.slice(0, room)) {
         if (!(IMAGE_UPLOAD.types as readonly string[]).includes(file.type)) {
-          problems.push(`${file.name} is not a JPEG, PNG, WebP or GIF image.`);
+          problems.push(this.i18n.t('admin.fileWrongType', { file: file.name }));
           continue;
         }
         if (file.size > IMAGE_UPLOAD.maxBytes) {
-          problems.push(`${file.name} is larger than ${IMAGE_UPLOAD.maxBytes / 1024 / 1024} MB.`);
+          problems.push(this.i18n.t('admin.fileTooLarge', { file: file.name, mb: IMAGE_UPLOAD.maxBytes / 1024 / 1024 }));
           continue;
         }
         try {
@@ -192,7 +197,7 @@ export class ProductFormPage implements OnInit {
           );
           this.setImages([...this.images(), uploaded.url]);
         } catch (err) {
-          problems.push(`${file.name}: ${apiError(err)?.message ?? "couldn't upload it"}.`);
+          problems.push(this.i18n.t('admin.fileFailed', { file: file.name, reason: this.i18n.errorMessage(err) }));
         }
       }
     } finally {
@@ -222,7 +227,9 @@ export class ProductFormPage implements OnInit {
       const saved = id
         ? await firstValueFrom(this.http.put<Product>(`/api/admin/products/${id}`, input))
         : await firstValueFrom(this.http.post<Product>('/api/admin/products', input));
-      this.snackBar.open(id ? `Saved “${saved.name}”` : `Created “${saved.name}”`, undefined, { duration: 3000 });
+      this.snackBar.open(this.i18n.t(id ? 'admin.saved' : 'admin.created', { name: saved.name }), undefined, {
+        duration: 3000,
+      });
       await this.router.navigate(['/admin/products']);
     } catch (err) {
       const body = apiError(err);
@@ -231,7 +238,7 @@ export class ProductFormPage implements OnInit {
         control?.setErrors({ server: message });
         control?.markAsTouched();
       }
-      this.error.set(body?.message ?? "Couldn't save the product.");
+      this.error.set(this.i18n.errorMessage(err, 'admin.saveFailed'));
     } finally {
       this.saving.set(false);
     }

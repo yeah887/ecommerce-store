@@ -8,18 +8,21 @@ import { MatPaginatorModule, type PageEvent } from '@angular/material/paginator'
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import {
   CATEGORIES,
-  CATEGORY_LABELS,
   DEFAULT_PAGE_SIZE,
   isCategory,
   type Page,
   type Product,
 } from '@store/shared';
 import { AddToCart } from '../cart/add-to-cart';
+import { I18n } from '../i18n/i18n';
 import { FilterPills, type FilterOption } from '../shared/filter-pills';
 import { ProductCard } from './product-card';
+import { TranslatePipe, TranslatePluralPipe } from '../i18n/translate.pipe';
+import { translatedPaginator } from '../i18n/paginator-intl';
 
 /** Product grid with search, category filter and pagination, all kept in the URL query. */
 @Component({
+  providers: [translatedPaginator],
   selector: 'app-catalog-page',
   imports: [
     FormsModule,
@@ -29,23 +32,25 @@ import { ProductCard } from './product-card';
     MatProgressBarModule,
     FilterPills,
     ProductCard,
+    TranslatePipe,
+    TranslatePluralPipe,
   ],
   templateUrl: './catalog-page.html',
 })
 export class CatalogPage {
   private readonly router = inject(Router);
   protected readonly addToCart = inject(AddToCart);
+  private readonly i18n = inject(I18n);
 
   // Bound from the URL query params (?q=&category=&page=).
   readonly q = input<string>();
   readonly category = input<string>();
   readonly page = input<string>();
 
-  protected readonly categoryLabels = CATEGORY_LABELS;
-  protected readonly categoryOptions: FilterOption[] = [
-    { value: '', label: 'All' },
-    ...CATEGORIES.map((category) => ({ value: category, label: CATEGORY_LABELS[category] })),
-  ];
+  protected readonly categoryOptions = computed<FilterOption[]>(() => [
+    { value: '', label: this.i18n.t('common.all') },
+    ...CATEGORIES.map((category) => ({ value: category, label: this.i18n.t(`category.${category}`) })),
+  ]);
   protected readonly pageSize = DEFAULT_PAGE_SIZE;
 
   protected readonly searchText = linkedSignal(() => this.q() ?? '');
@@ -71,12 +76,13 @@ export class CatalogPage {
   });
 
   protected readonly emptyMessage = computed(() => {
-    const q = this.q()?.trim();
+    const query = this.q()?.trim();
     const category = this.activeCategory();
-    let message = 'No products found';
-    if (q) message += ` for “${q}”`;
-    if (category) message += ` in ${this.categoryLabels[category]}`;
-    return `${message}.`;
+    const params = { query: query ?? '', category: category ? this.i18n.t(`category.${category}`) : '' };
+    if (query && category) return this.i18n.t('catalog.emptyQueryCategory', params);
+    if (query) return this.i18n.t('catalog.emptyQuery', params);
+    if (category) return this.i18n.t('catalog.emptyCategory', params);
+    return this.i18n.t('catalog.empty');
   });
 
   protected search(): void {

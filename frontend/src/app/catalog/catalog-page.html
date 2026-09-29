@@ -3,12 +3,12 @@
   <div class="pointer-events-none absolute -bottom-40 left-1/3 size-80 rounded-full bg-fuchsia-500/20 blur-3xl" aria-hidden="true"></div>
 
   <div class="relative max-w-2xl">
-    <p class="eyebrow !text-accent-300">Demo store</p>
+    <p class="eyebrow !text-accent-300">{{ 'catalog.eyebrow' | t }}</p>
     <h1 class="mt-3 text-3xl font-semibold tracking-tight text-balance sm:text-4xl">
-      Everyday things, thoughtfully picked.
+      {{ 'catalog.title' | t }}
     </h1>
     <p class="mt-3 max-w-xl text-zinc-300">
-      Electronics, books, clothing and more. Search the catalog or browse by category.
+      {{ 'catalog.subtitle' | t }}
     </p>
 
     <form role="search" class="mt-8 flex max-w-xl gap-2" (ngSubmit)="search()">
@@ -19,8 +19,8 @@
         <input
           name="q"
           type="search"
-          placeholder="Search products"
-          aria-label="Search products"
+          [placeholder]="'common.searchProducts' | t"
+          [attr.aria-label]="'common.searchProducts' | t"
           class="h-12 w-full rounded-xl bg-white pr-11 pl-11 text-zinc-900 placeholder:text-zinc-400 [&::-webkit-search-cancel-button]:hidden"
           [ngModel]="searchText()"
           (ngModelChange)="searchText.set($event)"
@@ -29,7 +29,7 @@
           <button
             type="button"
             class="absolute top-1/2 right-2 grid size-8 -translate-y-1/2 place-items-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
-            aria-label="Clear search"
+            [attr.aria-label]="'common.clearSearch' | t"
             (click)="clearSearch()"
           >
             <mat-icon class="icon-20">close</mat-icon>
@@ -37,7 +37,7 @@
         }
       </div>
       <button type="submit" class="h-12 rounded-xl bg-accent-500 px-5 font-semibold text-white hover:bg-accent-400">
-        Search
+        {{ 'common.search' | t }}
       </button>
     </form>
   </div>
@@ -45,14 +45,14 @@
 
 <div class="flex flex-wrap items-center justify-between gap-4">
   <app-filter-pills
-    label="Category"
-    [options]="categoryOptions"
+    [label]="'category.label' | t"
+    [options]="categoryOptions()"
     [value]="activeCategory() ?? ''"
     (valueChange)="selectCategory($event || undefined)"
   />
   @if (products.hasValue()) {
     <p class="text-sm text-zinc-500">
-      {{ products.value().total }} {{ products.value().total === 1 ? 'product' : 'products' }}
+      {{ 'catalog.count' | tn: products.value().total }}
     </p>
   }
 </div>
@@ -64,7 +64,7 @@
 </div>
 
 @if (products.error()) {
-  <p class="py-16 text-center text-zinc-500">Couldn't load products. Please try again.</p>
+  <p class="py-16 text-center text-zinc-500">{{ 'catalog.loadError' | t }}</p>
 } @else if (products.hasValue()) {
   @let result = products.value();
   @if (result.items.length === 0) {
@@ -74,9 +74,9 @@
       </span>
       <p class="mt-4 text-zinc-600">{{ emptyMessage() }}</p>
       @if (result.total > 0) {
-        <button matButton="outlined" class="mt-6" (click)="updateQuery({ page: null })">Back to the first page</button>
+        <button matButton="outlined" class="mt-6" (click)="updateQuery({ page: null })">{{ 'catalog.firstPage' | t }}</button>
       } @else if (q() || activeCategory()) {
-        <button matButton="outlined" class="mt-6" (click)="showAll()">Show all products</button>
+        <button matButton="outlined" class="mt-6" (click)="showAll()">{{ 'catalog.showAll' | t }}</button>
       }
     </div>
   } @else {
@@ -96,7 +96,7 @@
       [hidePageSize]="true"
       [showFirstLastButtons]="true"
       (page)="changePage($event)"
-      aria-label="Product pages"
+      [attr.aria-label]="'catalog.pages' | t"
     />
   }
 }

@@ -1,21 +1,22 @@
 import { Component, computed, input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { ORDER_STATUS_LABELS, type OrderStatus } from '@store/shared';
+import type { OrderStatus } from '@store/shared';
+import { OrderStatusPipe, TranslatePipe } from '../i18n/translate.pipe';
 
 const STEPS = ['placed', 'shipped', 'delivered'] as const satisfies readonly OrderStatus[];
 
 /** Where an order is in its lifecycle: placed → shipped → delivered, or a note that it was cancelled. */
 @Component({
   selector: 'app-order-progress',
-  imports: [MatIconModule],
+  imports: [MatIconModule, OrderStatusPipe, TranslatePipe],
   template: `
     @if (status() === 'cancelled') {
       <p class="flex items-center gap-3 rounded-xl bg-zinc-100 px-4 py-3 text-sm text-zinc-700">
         <mat-icon class="icon-20 !text-zinc-500">block</mat-icon>
-        This order was cancelled.
+        {{ 'order.wasCancelled' | t }}
       </p>
     } @else {
-      <ol class="flex items-center" aria-label="Order progress">
+      <ol class="flex items-center" [attr.aria-label]="'order.progress' | t">
         @for (step of steps; track step; let i = $index, last = $last) {
           @let done = i <= reached();
           <li class="flex items-center gap-2" [class.flex-1]="!last" [attr.aria-current]="i === reached() ? 'step' : null">
@@ -30,7 +31,7 @@ const STEPS = ['placed', 'shipped', 'delivered'] as const satisfies readonly Ord
               }
             </span>
             <span class="text-sm font-medium" [class]="done ? 'text-zinc-900' : 'text-zinc-500'">
-              {{ labels[step] }}
+              {{ step | orderStatus }}
             </span>
             @if (!last) {
               <span
@@ -49,6 +50,5 @@ export class OrderProgress {
   readonly status = input.required<OrderStatus>();
 
   protected readonly steps = STEPS;
-  protected readonly labels = ORDER_STATUS_LABELS;
   protected readonly reached = computed(() => STEPS.indexOf(this.status() as (typeof STEPS)[number]));
 }

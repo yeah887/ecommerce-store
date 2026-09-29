@@ -8,9 +8,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { NAME_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@store/shared';
+import { I18n } from '../i18n/i18n';
 import { apiError } from '../shared/api-error';
 import { AuthService } from './auth.service';
 import { safeReturnUrl } from './return-url';
+import { TranslatePipe } from '../i18n/translate.pipe';
 
 type Field = 'name' | 'email' | 'password';
 
@@ -25,12 +27,14 @@ type Field = 'name' | 'email' | 'password';
     MatInputModule,
     MatIconModule,
     MatProgressBarModule,
+    TranslatePipe,
   ],
   templateUrl: './register-page.html',
 })
 export class RegisterPage {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18n);
 
   /** Bound from `?returnUrl=`. */
   readonly returnUrl = input<string>();
@@ -61,11 +65,12 @@ export class RegisterPage {
         // Show server-side messages (e.g. "email already registered") on the fields themselves.
         for (const [field, message] of fields) {
           const control = this.form.controls[field as Field];
-          control?.setErrors({ server: message });
+          // "Email already registered" is known by its code, so it can be shown in the current language.
+          control?.setErrors({ server: body?.code === 'email_taken' ? this.i18n.t('error.email_taken') : message });
           control?.markAsTouched();
         }
       } else {
-        this.error.set(body?.message ?? 'Something went wrong. Please try again.');
+        this.error.set(this.i18n.errorMessage(err));
       }
     } finally {
       this.submitting.set(false);

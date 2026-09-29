@@ -5,13 +5,14 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import type { HealthResponse } from '@store/shared';
+import { TranslatePipe } from '../i18n/translate.pipe';
 
 type HealthView = 'loading' | 'healthy' | 'degraded' | 'unreachable';
 
 /** Temporary home page: shows whether the API and its database are up. */
 @Component({
   selector: 'app-health-page',
-  imports: [MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, TranslatePipe],
   templateUrl: './health-page.html',
 })
 export class HealthPage {

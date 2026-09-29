@@ -7,9 +7,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { apiError } from '../shared/api-error';
+import { I18n } from '../i18n/i18n';
 import { AuthService } from './auth.service';
 import { safeReturnUrl } from './return-url';
+import { TranslatePipe } from '../i18n/translate.pipe';
 
 @Component({
   selector: 'app-login-page',
@@ -22,12 +23,14 @@ import { safeReturnUrl } from './return-url';
     MatInputModule,
     MatIconModule,
     MatProgressBarModule,
+    TranslatePipe,
   ],
   templateUrl: './login-page.html',
 })
 export class LoginPage {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18n);
 
   /** Bound from `?returnUrl=`. */
   readonly returnUrl = input<string>();
@@ -50,7 +53,7 @@ export class LoginPage {
       await this.auth.login(this.form.getRawValue());
       await this.router.navigateByUrl(safeReturnUrl(this.returnUrl()));
     } catch (err) {
-      this.error.set(apiError(err)?.message ?? 'Something went wrong. Please try again.');
+      this.error.set(this.i18n.errorMessage(err));
     } finally {
       this.submitting.set(false);
     }

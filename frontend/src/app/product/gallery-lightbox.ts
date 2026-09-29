@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { swipeDirection } from './swipe';
+import { TranslatePipe } from '../i18n/translate.pipe';
 
 export interface LightboxData {
   images: string[];
@@ -12,7 +13,7 @@ export interface LightboxData {
 /** Full-screen view of a product's images. Closes with the index that was last shown. */
 @Component({
   selector: 'app-gallery-lightbox',
-  imports: [MatDialogModule, MatIconModule],
+  imports: [MatDialogModule, MatIconModule, TranslatePipe],
   host: {
     class: 'block h-full',
     '(keydown.arrowleft)': 'step(-1)',
@@ -27,7 +28,7 @@ export interface LightboxData {
         <button
           type="button"
           class="grid size-10 shrink-0 place-items-center rounded-full hover:bg-white/10"
-          aria-label="Close"
+          [attr.aria-label]="'common.close' | t"
           (click)="close()"
         >
           <mat-icon>close</mat-icon>
@@ -41,13 +42,13 @@ export interface LightboxData {
         <img
           class="max-h-full max-w-full rounded-lg object-contain select-none"
           [src]="data.images[index()]"
-          [alt]="data.name + ', image ' + (index() + 1) + ' of ' + data.images.length"
+          [alt]="'gallery.imageAlt' | t: { name: data.name, n: index() + 1, total: data.images.length }"
         />
         @if (data.images.length > 1) {
           <button
             type="button"
             class="absolute top-1/2 left-3 grid size-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 hover:bg-white/20 max-sm:hidden"
-            aria-label="Previous image"
+            [attr.aria-label]="'gallery.previous' | t"
             (click)="step(-1)"
           >
             <mat-icon>chevron_left</mat-icon>
@@ -55,7 +56,7 @@ export interface LightboxData {
           <button
             type="button"
             class="absolute top-1/2 right-3 grid size-12 -translate-y-1/2 place-items-center rounded-full bg-white/10 hover:bg-white/20 max-sm:hidden"
-            aria-label="Next image"
+            [attr.aria-label]="'gallery.next' | t"
             (click)="step(1)"
           >
             <mat-icon>chevron_right</mat-icon>
@@ -71,7 +72,7 @@ export interface LightboxData {
                 type="button"
                 class="block w-16 overflow-hidden rounded-lg ring-2 transition sm:w-20"
                 [class]="i === index() ? 'ring-white' : 'opacity-50 ring-transparent hover:opacity-100'"
-                [attr.aria-label]="'Show image ' + (i + 1)"
+                [attr.aria-label]="'gallery.show' | t: { n: i + 1 }"
                 [attr.aria-current]="i === index() ? 'true' : null"
                 (click)="index.set(i)"
               >

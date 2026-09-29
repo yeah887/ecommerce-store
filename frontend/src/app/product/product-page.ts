@@ -5,12 +5,14 @@ import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { CATEGORY_LABELS, type Product } from '@store/shared';
+import type { Product } from '@store/shared';
 import { AddToCart } from '../cart/add-to-cart';
+import { I18n } from '../i18n/i18n';
 import { NotFound } from '../not-found/not-found';
 import { QuantityPicker } from '../shared/quantity-picker';
 import { PricePipe } from '../shared/price.pipe';
 import { ProductGallery } from './product-gallery';
+import { CategoryPipe, TranslatePipe } from '../i18n/translate.pipe';
 
 @Component({
   selector: 'app-product-page',
@@ -23,6 +25,8 @@ import { ProductGallery } from './product-gallery';
     PricePipe,
     ProductGallery,
     QuantityPicker,
+    CategoryPipe,
+    TranslatePipe,
   ],
   templateUrl: './product-page.html',
 })
@@ -36,15 +40,15 @@ export class ProductPage {
     return error instanceof HttpErrorResponse && error.status === 404;
   });
 
-  protected readonly categoryLabels = CATEGORY_LABELS;
   protected readonly addToCart = inject(AddToCart);
+  private readonly i18n = inject(I18n);
   protected readonly quantity = signal(1);
 
   constructor() {
     const title = inject(Title);
     effect(() => {
       if (this.product.hasValue()) title.setTitle(`${this.product.value().name} · Store`);
-      else if (this.notFound()) title.setTitle('Product not found · Store');
+      else if (this.notFound()) title.setTitle(`${this.i18n.t('product.notFoundTitle')} · Store`);
     });
     // A new product starts again at quantity 1.
     effect(() => {

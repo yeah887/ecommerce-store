@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -8,12 +7,13 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import type { OrderSummary } from '@store/shared';
 import { PricePipe } from '../shared/price.pipe';
 import { StatusChip } from '../shared/status-chip';
+import { LocalDatePipe, TranslatePipe, TranslatePluralPipe } from '../i18n/translate.pipe';
 
 @Component({
   selector: 'app-orders-page',
-  imports: [DatePipe, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, PricePipe, StatusChip],
+  imports: [RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, PricePipe, StatusChip, LocalDatePipe, TranslatePipe, TranslatePluralPipe],
   template: `
-    <h1 class="page-title">My orders</h1>
+    <h1 class="page-title">{{ 'orders.title' | t }}</h1>
     <div class="mt-6 mb-4 h-1 overflow-hidden rounded-full">
       @if (orders.isLoading()) {
         <mat-progress-bar mode="indeterminate" />
@@ -21,15 +21,15 @@ import { StatusChip } from '../shared/status-chip';
     </div>
 
     @if (orders.error()) {
-      <p class="py-16 text-center text-zinc-500">Couldn't load your orders. Please try again.</p>
+      <p class="py-16 text-center text-zinc-500">{{ 'orders.loadError' | t }}</p>
     } @else if (orders.hasValue()) {
       @if (orders.value().length === 0) {
         <section class="card flex flex-col items-center px-6 py-16 text-center">
           <span class="grid size-16 place-items-center rounded-full bg-zinc-100 text-zinc-400">
             <mat-icon class="icon-32">receipt_long</mat-icon>
           </span>
-          <p class="mt-4 text-zinc-600">You haven't placed any orders yet.</p>
-          <a matButton="filled" routerLink="/" class="mt-6">Start shopping</a>
+          <p class="mt-4 text-zinc-600">{{ 'orders.none' | t }}</p>
+          <a matButton="filled" routerLink="/" class="mt-6">{{ 'orders.startShopping' | t }}</a>
         </section>
       } @else {
         <ul class="card divide-y divide-zinc-200 overflow-hidden">
@@ -42,8 +42,7 @@ import { StatusChip } from '../shared/status-chip';
                 <div class="min-w-0 flex-1">
                   <p class="font-mono text-sm font-semibold text-zinc-900">#{{ order.number }}</p>
                   <p class="mt-0.5 text-sm text-zinc-500">
-                    {{ order.createdAt | date: 'mediumDate' }} · {{ order.itemCount }}
-                    {{ order.itemCount === 1 ? 'item' : 'items' }}
+                    {{ order.createdAt | localDate }} · {{ 'orders.items' | tn: order.itemCount }}
                     <span class="sm:hidden">· {{ order.totalCents | price }}</span>
                   </p>
                 </div>

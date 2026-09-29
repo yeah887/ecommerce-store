@@ -9,12 +9,15 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { firstValueFrom } from 'rxjs';
-import { CATEGORY_LABELS, MAX_PAGE_SIZE, type Page, type Product } from '@store/shared';
-import { apiError } from '../shared/api-error';
+import { MAX_PAGE_SIZE, type Page, type Product } from '@store/shared';
+import { I18n } from '../i18n/i18n';
 import { Confirm } from '../shared/confirm-dialog';
 import { PricePipe } from '../shared/price.pipe';
+import { translatedPaginator } from '../i18n/paginator-intl';
+import { CategoryPipe, TranslatePipe } from '../i18n/translate.pipe';
 
 @Component({
+  providers: [translatedPaginator],
   selector: 'app-admin-products-page',
   imports: [
     FormsModule,
@@ -25,6 +28,8 @@ import { PricePipe } from '../shared/price.pipe';
     MatProgressBarModule,
     MatTableModule,
     PricePipe,
+    CategoryPipe,
+    TranslatePipe,
   ],
   templateUrl: './admin-products-page.html',
 })
@@ -33,19 +38,15 @@ export class AdminProductsPage {
   private readonly router = inject(Router);
   private readonly confirm = inject(Confirm);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly i18n = inject(I18n);
 
   // Bound from the URL query (?q=&page=).
   readonly q = input<string>();
   readonly page = input<string>();
 
   protected readonly pageSize = MAX_PAGE_SIZE;
-  protected readonly categoryLabels = CATEGORY_LABELS;
   protected readonly columns = ['image', 'name', 'category', 'price', 'actions'];
   protected readonly searchText = linkedSignal(() => this.q() ?? '');
-
-  protected categoryLabel(product: Product): string {
-    return this.categoryLabels[product.category];
-  }
 
   private pageNumber(): number {
     const page = Number(this.page());
@@ -76,17 +77,17 @@ export class AdminProductsPage {
 
   protected async remove(product: Product): Promise<void> {
     const confirmed = await this.confirm.ask({
-      title: 'Delete this product?',
-      message: `“${product.name}” will be removed from the store. Past orders keep their copy of it.`,
-      confirmLabel: 'Delete',
+      title: this.i18n.t('admin.deleteTitle'),
+      message: this.i18n.t('admin.deleteMessage', { name: product.name }),
+      confirmLabel: this.i18n.t('admin.deleteConfirm'),
     });
     if (!confirmed) return;
 
     try {
       await firstValueFrom(this.http.delete(`/api/admin/products/${product.id}`));
-      this.snackBar.open(`Deleted “${product.name}”`, undefined, { duration: 3000 });
+      this.snackBar.open(this.i18n.t('admin.deleted', { name: product.name }), undefined, { duration: 3000 });
     } catch (err) {
-      this.snackBar.open(apiError(err)?.message ?? "Couldn't delete the product", undefined, { duration: 5000 });
+      this.snackBar.open(this.i18n.errorMessage(err, 'admin.deleteFailed'), undefined, { duration: 5000 });
     }
     this.products.reload();
   }

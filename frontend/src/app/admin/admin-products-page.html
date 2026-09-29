@@ -1,6 +1,6 @@
 <header class="flex flex-wrap items-center justify-between gap-4">
-  <h1 class="page-title">Products</h1>
-  <a matButton="filled" routerLink="/admin/products/new"><mat-icon>add</mat-icon> New product</a>
+  <h1 class="page-title">{{ 'admin.products' | t }}</h1>
+  <a matButton="filled" routerLink="/admin/products/new"><mat-icon>add</mat-icon> {{ 'admin.newProduct' | t }}</a>
 </header>
 
 <form role="search" class="mt-6 flex max-w-md gap-2" (ngSubmit)="search()">
@@ -11,14 +11,14 @@
     <input
       name="q"
       type="search"
-      placeholder="Search products"
-      aria-label="Search products"
+      [placeholder]="'common.searchProducts' | t"
+      [attr.aria-label]="'common.searchProducts' | t"
       class="h-10 w-full rounded-xl border border-zinc-300 bg-white pr-3 pl-10 text-sm placeholder:text-zinc-400"
       [ngModel]="searchText()"
       (ngModelChange)="searchText.set($event)"
     />
   </div>
-  <button matButton="outlined" type="submit">Search</button>
+  <button matButton="outlined" type="submit">{{ 'common.search' | t }}</button>
 </form>
 
 <div class="mt-6 mb-4 h-1 overflow-hidden rounded-full">
@@ -28,15 +28,15 @@
 </div>
 
 @if (products.error()) {
-  <p class="py-16 text-center text-zinc-500">Couldn't load products.</p>
+  <p class="py-16 text-center text-zinc-500">{{ 'admin.productsLoadError' | t }}</p>
 } @else if (products.hasValue()) {
   @let result = products.value();
   @if (result.items.length === 0) {
-    <p class="card py-16 text-center text-zinc-500">No products found.</p>
+    <p class="card py-16 text-center text-zinc-500">{{ 'admin.noProducts' | t }}</p>
   } @else {
     <div class="card overflow-hidden">
       <div class="overflow-x-auto">
-        <table mat-table class="!min-w-[720px]" [dataSource]="result.items">
+        <table mat-table class="!min-w-[max(100%,720px)]" [dataSource]="result.items">
           <ng-container matColumnDef="image">
             <th mat-header-cell *matHeaderCellDef class="w-20"></th>
             <td mat-cell *matCellDef="let p">
@@ -44,26 +44,26 @@
             </td>
           </ng-container>
           <ng-container matColumnDef="name">
-            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <th mat-header-cell *matHeaderCellDef>{{ 'admin.colName' | t }}</th>
             <td mat-cell *matCellDef="let p">
               <a class="rounded font-medium text-zinc-900 hover:text-accent-700" [routerLink]="['/products', p.id]">{{ p.name }}</a>
             </td>
           </ng-container>
           <ng-container matColumnDef="category">
-            <th mat-header-cell *matHeaderCellDef>Category</th>
-            <td mat-cell *matCellDef="let p" class="!text-zinc-500">{{ categoryLabel(p) }}</td>
+            <th mat-header-cell *matHeaderCellDef>{{ 'category.label' | t }}</th>
+            <td mat-cell *matCellDef="let p" class="!text-zinc-500">{{ p.category | category }}</td>
           </ng-container>
           <ng-container matColumnDef="price">
-            <th mat-header-cell *matHeaderCellDef class="!text-right">Price</th>
+            <th mat-header-cell *matHeaderCellDef class="!text-right">{{ 'admin.colPrice' | t }}</th>
             <td mat-cell *matCellDef="let p" class="!text-right font-medium tabular-nums">{{ p.priceCents | price }}</td>
           </ng-container>
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef class="w-36"></th>
             <td mat-cell *matCellDef="let p" class="!overflow-visible !text-right whitespace-nowrap">
-              <a matIconButton [routerLink]="['/admin/products', p.id, 'edit']" [attr.aria-label]="'Edit ' + p.name">
+              <a matIconButton [routerLink]="['/admin/products', p.id, 'edit']" [attr.aria-label]="'admin.edit' | t: { name: p.name }">
                 <mat-icon>edit</mat-icon>
               </a>
-              <button matIconButton type="button" [attr.aria-label]="'Delete ' + p.name" (click)="remove(p)">
+              <button matIconButton type="button" [attr.aria-label]="'admin.delete' | t: { name: p.name }" (click)="remove(p)">
                 <mat-icon>delete</mat-icon>
               </button>
             </td>
@@ -81,7 +81,7 @@
         [pageSize]="pageSize"
         [hidePageSize]="true"
         (page)="changePage($event)"
-        aria-label="Product pages"
+        [attr.aria-label]="'catalog.pages' | t"
       />
     </div>
   }

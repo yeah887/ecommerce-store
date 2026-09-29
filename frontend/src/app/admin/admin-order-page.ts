@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { HttpClient, HttpErrorResponse, httpResource } from '@angular/common/http';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -9,29 +8,29 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { firstValueFrom } from 'rxjs';
 import {
   NEXT_ORDER_STATUSES,
-  ORDER_STATUS_LABELS,
   type AdminOrder,
   type OrderStatus,
   type UpdateOrderStatusRequest,
 } from '@store/shared';
 import { NotFound } from '../not-found/not-found';
-import { apiError } from '../shared/api-error';
+import type { TranslationKey } from '../i18n/en';
+import { I18n } from '../i18n/i18n';
 import { Confirm } from '../shared/confirm-dialog';
 import { PricePipe } from '../shared/price.pipe';
 import { OrderProgress } from '../shared/order-progress';
 import { StatusChip } from '../shared/status-chip';
+import { LocalDatePipe, OrderStatusPipe, TranslatePipe } from '../i18n/translate.pipe';
 
-const ACTION_LABELS: Record<OrderStatus, string> = {
-  placed: 'Mark as placed',
-  shipped: 'Mark as shipped',
-  delivered: 'Mark as delivered',
-  cancelled: 'Cancel order',
+const ACTION_LABELS: Record<OrderStatus, TranslationKey> = {
+  placed: 'admin.markPlaced',
+  shipped: 'admin.markShipped',
+  delivered: 'admin.markDelivered',
+  cancelled: 'admin.markCancelled',
 };
 
 @Component({
   selector: 'app-admin-order-page',
   imports: [
-    DatePipe,
     RouterLink,
     MatButtonModule,
     MatIconModule,
@@ -40,6 +39,9 @@ const ACTION_LABELS: Record<OrderStatus, string> = {
     PricePipe,
     OrderProgress,
     StatusChip,
+    LocalDatePipe,
+    OrderStatusPipe,
+    TranslatePipe,
   ],
   templateUrl: './admin-order-page.html',
 })
@@ -47,6 +49,7 @@ export class AdminOrderPage {
   private readonly http = inject(HttpClient);
   private readonly confirm = inject(Confirm);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly i18n = inject(I18n);
 
   /** Bound from the `:id` route parameter. */
   readonly id = input.required<string>();
@@ -66,10 +69,14 @@ export class AdminOrderPage {
 
   protected async setStatus(order: AdminOrder, status: OrderStatus): Promise<void> {
     const confirmed = await this.confirm.ask({
-      title: `${ACTION_LABELS[status]}?`,
-      message: `Order #${order.number} will change from ${ORDER_STATUS_LABELS[order.status]} to ${ORDER_STATUS_LABELS[status]}. This can't be undone.`,
-      confirmLabel: ACTION_LABELS[status],
-      cancelLabel: 'Back',
+      title: `${this.i18n.t(ACTION_LABELS[status])}?`,
+      message: this.i18n.t('admin.statusMessage', {
+        number: order.number,
+        from: this.i18n.t(`status.${order.status}`),
+        to: this.i18n.t(`status.${status}`),
+      }),
+      confirmLabel: this.i18n.t(ACTION_LABELS[status]),
+      cancelLabel: this.i18n.t('admin.back'),
     });
     if (!confirmed) return;
 
@@ -78,11 +85,12 @@ export class AdminOrderPage {
       const body: UpdateOrderStatusRequest = { status };
       const updated = await firstValueFrom(this.http.patch<AdminOrder>(`/api/admin/orders/${order.id}/status`, body));
       this.order.set(updated);
-      this.snackBar.open(`Order #${order.number} is now ${ORDER_STATUS_LABELS[status].toLowerCase()}`, undefined, {
+      const statusName = this.i18n.t(`status.${status}`).toLowerCase();
+      this.snackBar.open(this.i18n.t('admin.statusChanged', { number: order.number, status: statusName }), undefined, {
         duration: 4000,
       });
     } catch (err) {
-      this.snackBar.open(apiError(err)?.message ?? "Couldn't update the order", undefined, { duration: 5000 });
+      this.snackBar.open(this.i18n.errorMessage(err, 'admin.updateFailed'), undefined, { duration: 5000 });
       this.order.reload();
     } finally {
       this.updating.set(false);

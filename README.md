@@ -9,6 +9,7 @@ A full-stack e-commerce store built as a learning and portfolio project. Nothing
 
 ## Features
 
+- **Languages:** English, German, French, Spanish, Italian and Portuguese. The store starts in the browser's language, a menu in the header switches without reloading, and the choice is remembered. Prices and dates follow the language ("12,99 €" in German). Product names and descriptions stay as entered.
 - **Catalog:** product grid with text search, category filter and pagination. The state is kept in the URL, so views can be bookmarked and the back button works.
 - **Product pages:** details, a quantity picker and an image gallery with thumbnails, swipe and arrow-key navigation, and a full-screen view.
 - **Cart:** kept in the browser (localStorage) and survives reloads. Quantities are capped at 99, and open tabs stay in sync.
@@ -117,7 +118,7 @@ npm test -w frontend     # Angular unit tests
   - image upload, type detection, image lists and cleanup
   - migrating single-image products to image lists
   - seeding
-- **Frontend:** unit tests for the cart store, euro-to-cents parsing and the post-login redirect check.
+- **Frontend:** unit tests for the cart store, euro-to-cents parsing, the post-login redirect check, swipe detection, and translations (language choice, plurals, error codes, placeholders in every language).
 
 The first backend run downloads a MongoDB binary (about 180 MB unpacked) into `~/.cache/mongodb-binaries`.
 
@@ -139,6 +140,7 @@ The first backend run downloads a MongoDB binary (about 180 MB unpacked) into `~
 │   └── test/
 ├── frontend/   Angular app (a folder per feature: catalog, product, cart, checkout, orders, auth, admin)
 │   └── src/
+│       ├── app/i18n/       translations: en.ts is the source, one file per language
 │       ├── tailwind.css    design tokens and shared utilities (card, page-title, eyebrow, icon-*)
 │       └── styles.scss     Material theme, pointed at the same colours
 ├── compose.yaml            production-like stack
@@ -172,6 +174,7 @@ Every route is under `/api`. Errors always have the shape `{ "error": { "code", 
 - **Sample images** come from picsum.photos: random photos, not pictures of the products. They need internet access. Uploaded images are served by the API itself.
 - **Uploaded images are checked by their content:** the server detects the type from the file's first bytes and ignores the type the browser claims. SVG is not accepted, because it can contain scripts.
 - **Tailwind and Material together:** pages are styled with Tailwind utilities; Material still provides the interactive widgets (form fields, select, menu, dialog, table, paginator, snackbar), themed to the same zinc and indigo palette. Material's CSS is not in a cascade layer, so it beats Tailwind's layered utilities on Material elements: size a `mat-icon` with `icon-<px>` and colour it with an important utility such as `!text-zinc-400`.
+- **Adding a language:** copy `frontend/src/app/i18n/de.ts`, translate it, and add the language to `LANGUAGES` and `loadLanguage` in `languages.ts`. The build fails if a translation is missing a key, and a unit test checks that every `{placeholder}` is kept. Templates use `{{ 'key' | t }}` (and `tn` for plurals); a mistyped key is a compile error. API errors are translated by their `code`.
 - **Out of scope for this version:**
   - real payments, taxes and shipping costs
   - inventory, reviews and guest checkout

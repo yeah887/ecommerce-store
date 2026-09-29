@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -7,21 +6,23 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
 import {
   ORDER_STATUSES,
-  ORDER_STATUS_LABELS,
   isOrderStatus,
   type AdminOrderSummary,
   type Page,
 } from '@store/shared';
+import { I18n } from '../i18n/i18n';
 import { FilterPills, type FilterOption } from '../shared/filter-pills';
 import { PricePipe } from '../shared/price.pipe';
 import { StatusChip } from '../shared/status-chip';
+import { translatedPaginator } from '../i18n/paginator-intl';
+import { LocalDatePipe, TranslatePipe } from '../i18n/translate.pipe';
 
 const PAGE_SIZE = 20;
 
 @Component({
+  providers: [translatedPaginator],
   selector: 'app-admin-orders-page',
   imports: [
-    DatePipe,
     RouterLink,
     MatPaginatorModule,
     MatProgressBarModule,
@@ -29,14 +30,16 @@ const PAGE_SIZE = 20;
     FilterPills,
     PricePipe,
     StatusChip,
+    LocalDatePipe,
+    TranslatePipe,
   ],
   template: `
-    <h1 class="page-title">Orders</h1>
+    <h1 class="page-title">{{ 'admin.orders' | t }}</h1>
 
     <app-filter-pills
       class="mt-6 block"
-      label="Filter by status"
-      [options]="statusOptions"
+      [label]="'admin.filterStatus' | t"
+      [options]="statusOptions()"
       [value]="activeStatus() ?? ''"
       (valueChange)="filter($event || null)"
     />
@@ -48,17 +51,19 @@ const PAGE_SIZE = 20;
     </div>
 
     @if (orders.error()) {
-      <p class="py-16 text-center text-zinc-500">Couldn't load orders.</p>
+      <p class="py-16 text-center text-zinc-500">{{ 'admin.ordersLoadError' | t }}</p>
     } @else if (orders.hasValue()) {
       @let result = orders.value();
       @if (result.items.length === 0) {
-        <p class="card py-16 text-center text-zinc-500">No orders{{ activeStatus() ? ' with this status' : ' yet' }}.</p>
+        <p class="card py-16 text-center text-zinc-500">
+          {{ (activeStatus() ? 'admin.noOrdersWithStatus' : 'admin.noOrders') | t }}
+        </p>
       } @else {
         <div class="card overflow-hidden">
           <div class="overflow-x-auto">
-            <table mat-table class="!min-w-[720px]" [dataSource]="result.items">
+            <table mat-table class="!min-w-[max(100%,720px)]" [dataSource]="result.items">
               <ng-container matColumnDef="number">
-                <th mat-header-cell *matHeaderCellDef>Order</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'admin.colOrder' | t }}</th>
                 <td mat-cell *matCellDef="let o">
                   <a class="rounded font-mono font-semibold text-zinc-900 hover:text-accent-700" [routerLink]="['/admin/orders', o.id]">
                     #{{ o.number }}
@@ -66,30 +71,30 @@ const PAGE_SIZE = 20;
                 </td>
               </ng-container>
               <ng-container matColumnDef="date">
-                <th mat-header-cell *matHeaderCellDef>Placed</th>
-                <td mat-cell *matCellDef="let o" class="!text-zinc-500">{{ o.createdAt | date: 'medium' }}</td>
+                <th mat-header-cell *matHeaderCellDef>{{ 'admin.colPlaced' | t }}</th>
+                <td mat-cell *matCellDef="let o" class="!text-zinc-500">{{ o.createdAt | localDate: 'medium' }}</td>
               </ng-container>
               <ng-container matColumnDef="customer">
-                <th mat-header-cell *matHeaderCellDef>Customer</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'admin.colCustomer' | t }}</th>
                 <td mat-cell *matCellDef="let o">
                   @if (o.customer) {
                     <span class="block font-medium">{{ o.customer.name }}</span>
                     <span class="block text-xs text-zinc-500">{{ o.customer.email }}</span>
                   } @else {
-                    <span class="text-zinc-500">Deleted account</span>
+                    <span class="text-zinc-500">{{ 'admin.deletedAccount' | t }}</span>
                   }
                 </td>
               </ng-container>
               <ng-container matColumnDef="items">
-                <th mat-header-cell *matHeaderCellDef class="!text-right">Items</th>
+                <th mat-header-cell *matHeaderCellDef class="!text-right">{{ 'admin.colItems' | t }}</th>
                 <td mat-cell *matCellDef="let o" class="!text-right tabular-nums">{{ o.itemCount }}</td>
               </ng-container>
               <ng-container matColumnDef="total">
-                <th mat-header-cell *matHeaderCellDef class="!text-right">Total</th>
+                <th mat-header-cell *matHeaderCellDef class="!text-right">{{ 'common.total' | t }}</th>
                 <td mat-cell *matCellDef="let o" class="!text-right font-medium tabular-nums">{{ o.totalCents | price }}</td>
               </ng-container>
               <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef>Status</th>
+                <th mat-header-cell *matHeaderCellDef>{{ 'admin.colStatus' | t }}</th>
                 <td mat-cell *matCellDef="let o"><app-status-chip [status]="o.status" /></td>
               </ng-container>
 
@@ -106,7 +111,7 @@ const PAGE_SIZE = 20;
               [pageSize]="pageSize"
               [hidePageSize]="true"
               (page)="changePage($event)"
-              aria-label="Order pages"
+              [attr.aria-label]="'admin.orderPages' | t"
             />
           }
         </div>
@@ -116,15 +121,16 @@ const PAGE_SIZE = 20;
 })
 export class AdminOrdersPage {
   private readonly router = inject(Router);
+  private readonly i18n = inject(I18n);
 
   // Bound from the URL query (?status=&page=).
   readonly status = input<string>();
   readonly page = input<string>();
 
-  protected readonly statusOptions: FilterOption[] = [
-    { value: '', label: 'All' },
-    ...ORDER_STATUSES.map((status) => ({ value: status, label: ORDER_STATUS_LABELS[status] })),
-  ];
+  protected readonly statusOptions = computed<FilterOption[]>(() => [
+    { value: '', label: this.i18n.t('common.all') },
+    ...ORDER_STATUSES.map((status) => ({ value: status, label: this.i18n.t(`status.${status}`) })),
+  ]);
   protected readonly pageSize = PAGE_SIZE;
   protected readonly columns = ['number', 'date', 'customer', 'items', 'total', 'status'];
 

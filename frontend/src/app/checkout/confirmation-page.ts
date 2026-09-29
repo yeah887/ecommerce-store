@@ -4,32 +4,36 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { orderNumber, type Order } from '@store/shared';
 import { PricePipe } from '../shared/price.pipe';
+import { TranslatePipe, TranslatePluralPipe } from '../i18n/translate.pipe';
 
 @Component({
   selector: 'app-confirmation-page',
-  imports: [RouterLink, MatButtonModule, MatIconModule, PricePipe],
+  imports: [RouterLink, MatButtonModule, MatIconModule, PricePipe, TranslatePipe, TranslatePluralPipe],
   template: `
     <section class="card mx-auto max-w-xl px-6 py-12 text-center sm:px-10">
       <span class="mx-auto grid size-16 place-items-center rounded-full bg-emerald-50 text-emerald-600">
         <mat-icon class="icon-36">check_circle</mat-icon>
       </span>
-      <h1 class="page-title mt-6">Thank you for your order!</h1>
+      <h1 class="page-title mt-6">{{ 'confirmation.title' | t }}</h1>
       <p class="mt-2 text-zinc-500">
-        Order number <strong class="font-mono text-base font-semibold text-zinc-900">{{ number() }}</strong>
+        {{ 'confirmation.number' | t }}
+        <strong class="font-mono text-base font-semibold text-zinc-900">{{ number() }}</strong>
       </p>
 
       @if (order(); as o) {
         <p class="mt-6 leading-7 text-zinc-600">
-          We've received your order of {{ o.lines.length }}
-          {{ o.lines.length === 1 ? 'product' : 'products' }} for
-          <strong class="text-zinc-900">{{ o.totalCents | price }}</strong>. It will be shipped to
-          {{ o.shippingAddress.name }}, {{ o.shippingAddress.city }}.
+          {{
+            'confirmation.summary'
+              | tn
+                : o.lines.length
+                : { total: o.totalCents | price, name: o.shippingAddress.name, city: o.shippingAddress.city }
+          }}
         </p>
       }
 
       <div class="mt-8 flex flex-wrap justify-center gap-3">
-        <a matButton="outlined" [routerLink]="['/orders', id()]">View order</a>
-        <a matButton="filled" routerLink="/">Continue shopping</a>
+        <a matButton="outlined" [routerLink]="['/orders', id()]">{{ 'confirmation.view' | t }}</a>
+        <a matButton="filled" routerLink="/">{{ 'common.continueShopping' | t }}</a>
       </div>
     </section>
   `,

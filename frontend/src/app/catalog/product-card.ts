@@ -1,12 +1,13 @@
 import { Component, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { CATEGORY_LABELS, type Product } from '@store/shared';
+import type { Product } from '@store/shared';
 import { PricePipe } from '../shared/price.pipe';
+import { CategoryPipe, TranslatePipe } from '../i18n/translate.pipe';
 
 @Component({
   selector: 'app-product-card',
-  imports: [RouterLink, MatIconModule, PricePipe],
+  imports: [RouterLink, MatIconModule, PricePipe, CategoryPipe, TranslatePipe],
   host: { class: 'block h-full' },
   template: `
     <div class="group flex h-full flex-col">
@@ -19,7 +20,7 @@ import { PricePipe } from '../shared/price.pipe';
             loading="lazy"
           />
         </div>
-        <p class="eyebrow mt-4">{{ categoryLabels[product().category] }}</p>
+        <p class="eyebrow mt-4">{{ product().category | category }}</p>
         <h3 class="mt-1 line-clamp-2 font-medium text-zinc-900 group-hover:text-accent-700">
           {{ product().name }}
         </h3>
@@ -29,7 +30,7 @@ import { PricePipe } from '../shared/price.pipe';
         <button
           type="button"
           class="grid size-9 place-items-center rounded-full border border-zinc-200 text-zinc-700 transition-colors hover:border-zinc-900 hover:bg-zinc-900 hover:text-white"
-          [attr.aria-label]="'Add ' + product().name + ' to cart'"
+          [attr.aria-label]="'catalog.addToCart' | t: { name: product().name }"
           (click)="addToCart.emit()"
         >
           <mat-icon class="icon-18">add_shopping_cart</mat-icon>
@@ -41,5 +42,4 @@ import { PricePipe } from '../shared/price.pipe';
 export class ProductCard {
   readonly product = input.required<Product>();
   readonly addToCart = output<void>();
-  protected readonly categoryLabels = CATEGORY_LABELS;
 }

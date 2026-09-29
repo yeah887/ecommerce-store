@@ -1,13 +1,13 @@
-<h1 class="page-title">Shopping cart</h1>
+<h1 class="page-title">{{ 'cart.title' | t }}</h1>
 
 @if (cart.isEmpty()) {
   <section class="card mt-8 flex flex-col items-center px-6 py-16 text-center">
     <span class="grid size-16 place-items-center rounded-full bg-zinc-100 text-zinc-400">
       <mat-icon class="icon-32">shopping_bag</mat-icon>
     </span>
-    <h2 class="mt-4 text-lg font-semibold text-zinc-900">Your cart is empty</h2>
-    <p class="mt-1 text-zinc-500">Find something you like in the catalog.</p>
-    <a matButton="filled" routerLink="/" class="mt-6">Browse the catalog</a>
+    <h2 class="mt-4 text-lg font-semibold text-zinc-900">{{ 'cart.emptyTitle' | t }}</h2>
+    <p class="mt-1 text-zinc-500">{{ 'cart.emptyText' | t }}</p>
+    <a matButton="filled" routerLink="/" class="mt-6">{{ 'common.browseCatalog' | t }}</a>
   </section>
 } @else {
   <div class="mt-8 grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -25,12 +25,12 @@
               >
                 {{ line.name }}
               </a>
-              <p class="mt-1 text-sm text-zinc-500 tabular-nums">{{ line.priceCents | price }} each</p>
+              <p class="mt-1 text-sm text-zinc-500 tabular-nums">{{ 'cart.each' | t: { price: line.priceCents | price } }}</p>
             </div>
             <div class="flex items-center justify-between gap-4">
               <app-quantity-picker
                 [value]="line.quantity"
-                [label]="'Quantity of ' + line.name"
+                [label]="'cart.quantityOf' | t: { name: line.name }"
                 (valueChange)="cart.setQuantity(line.productId, $event)"
               />
               <span class="w-24 text-right font-semibold text-zinc-900 tabular-nums">
@@ -41,7 +41,7 @@
           <button
             type="button"
             class="grid size-9 shrink-0 place-items-center self-start rounded-full text-zinc-400 hover:bg-red-50 hover:text-red-600 sm:self-center"
-            [attr.aria-label]="'Remove ' + line.name"
+            [attr.aria-label]="'cart.remove' | t: { name: line.name }"
             (click)="cart.remove(line.productId)"
           >
             <mat-icon class="icon-20">close</mat-icon>
@@ -51,14 +51,14 @@
     </ul>
 
     <aside class="card p-6 lg:sticky lg:top-24">
-      <h2 class="section-title">Order summary</h2>
+      <h2 class="section-title">{{ 'common.orderSummary' | t }}</h2>
       <div class="mt-4 flex items-baseline justify-between">
-        <span class="text-zinc-600">Subtotal ({{ cart.count() }} {{ cart.count() === 1 ? 'item' : 'items' }})</span>
+        <span class="text-zinc-600">{{ 'cart.subtotal' | tn: cart.count() }}</span>
         <strong class="text-lg font-semibold text-zinc-900 tabular-nums">{{ cart.subtotalCents() | price }}</strong>
       </div>
-      <p class="mt-2 text-xs text-zinc-500">Prices are confirmed at checkout.</p>
-      <a matButton="filled" routerLink="/checkout" class="mt-6 !h-12 w-full">Checkout</a>
-      <a matButton routerLink="/" class="mt-2 w-full">Continue shopping</a>
+      <p class="mt-2 text-xs text-zinc-500">{{ 'cart.pricesConfirmed' | t }}</p>
+      <a matButton="filled" routerLink="/checkout" class="mt-6 !h-12 w-full">{{ 'cart.checkout' | t }}</a>
+      <a matButton routerLink="/" class="mt-2 w-full">{{ 'common.continueShopping' | t }}</a>
     </aside>
   </div>
 }

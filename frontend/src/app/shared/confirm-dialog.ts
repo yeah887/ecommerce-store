@@ -2,6 +2,7 @@ import { Component, Injectable, inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { firstValueFrom } from 'rxjs';
+import { TranslatePipe } from '../i18n/translate.pipe';
 
 export interface ConfirmOptions {
   title: string;
@@ -12,12 +13,12 @@ export interface ConfirmOptions {
 
 @Component({
   selector: 'app-confirm-dialog',
-  imports: [MatDialogModule, MatButtonModule],
+  imports: [MatDialogModule, MatButtonModule, TranslatePipe],
   template: `
     <h2 mat-dialog-title>{{ data.title }}</h2>
     <mat-dialog-content>{{ data.message }}</mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button matButton [mat-dialog-close]="false">{{ data.cancelLabel ?? 'Cancel' }}</button>
+      <button matButton [mat-dialog-close]="false">{{ data.cancelLabel ?? ('common.cancel' | t) }}</button>
       <button matButton="filled" [mat-dialog-close]="true" cdkFocusInitial>{{ data.confirmLabel }}</button>
     </mat-dialog-actions>
   `,
