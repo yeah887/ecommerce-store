@@ -1,8 +1,8 @@
 <div class="flex min-h-dvh flex-col">
-  <header class="sticky top-0 z-20 border-b border-zinc-200/80 bg-white/80 backdrop-blur-md">
+  <header class="sticky top-0 z-20 border-b border-zinc-200/80 bg-surface/80 backdrop-blur-md">
     <div class="mx-auto flex h-16 max-w-7xl items-center gap-1 px-4 sm:gap-2 sm:px-6 lg:px-8">
       <a routerLink="/" class="mr-auto flex items-center gap-2.5 rounded-lg text-zinc-900">
-        <span class="grid size-8 place-items-center rounded-lg bg-zinc-900 text-white">
+        <span class="grid size-8 place-items-center rounded-lg bg-zinc-900 text-zinc-50">
           <mat-icon class="icon-20" aria-hidden="true">storefront</mat-icon>
         </span>
         <span class="text-lg font-semibold tracking-tight">Store</span>
@@ -40,6 +40,10 @@
               <span>{{ 'nav.manageOrders' | t }}</span>
             </a>
           }
+          <a mat-menu-item routerLink="/settings">
+            <mat-icon>settings</mat-icon>
+            <span>{{ 'nav.settings' | t }}</span>
+          </a>
           <button mat-menu-item (click)="logout()">
             <mat-icon>logout</mat-icon>
             <span>{{ 'nav.logout' | t }}</span>
@@ -51,7 +55,7 @@
         </a>
         <a
           routerLink="/register"
-          class="rounded-lg bg-zinc-900 px-3.5 py-2 text-sm font-medium text-white hover:bg-zinc-700 max-sm:hidden"
+          class="rounded-lg bg-zinc-900 px-3.5 py-2 text-sm font-medium text-zinc-50 hover:bg-zinc-700 max-sm:hidden"
         >
           {{ 'nav.signup' | t }}
         </a>
@@ -73,7 +77,7 @@
             role="menuitemradio"
             [attr.aria-checked]="language.code === i18n.language()"
             [attr.lang]="language.code"
-            (click)="i18n.use(language.code)"
+            (click)="settings.setLanguage(language.code)"
           >
             <span class="flex w-full items-center justify-between gap-6">
               {{ language.name }}
@@ -93,7 +97,7 @@
         <mat-icon aria-hidden="true">shopping_bag</mat-icon>
         @if (cart.count() > 0) {
           <span
-            class="absolute -top-0.5 -right-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-accent-600 px-1 text-[11px] font-semibold text-white ring-2 ring-white"
+            class="absolute -top-0.5 -right-0.5 grid h-5 min-w-5 place-items-center rounded-full bg-accent-600 px-1 text-[11px] font-semibold text-white ring-2 ring-surface"
             aria-hidden="true"
           >
             {{ cart.count() }}
@@ -107,12 +111,15 @@
     <router-outlet />
   </main>
 
-  <footer class="border-t border-zinc-200 bg-white">
+  <footer class="border-t border-zinc-200 bg-surface">
     <div
       class="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"
     >
       <p>{{ 'footer.demo' | t }}</p>
-      <a routerLink="/status" class="hover:text-zinc-900">{{ 'footer.status' | t }}</a>
+      <nav class="flex gap-4">
+        <a routerLink="/settings" class="hover:text-zinc-900">{{ 'nav.settings' | t }}</a>
+        <a routerLink="/status" class="hover:text-zinc-900">{{ 'footer.status' | t }}</a>
+      </nav>
     </div>
   </footer>
 </div>

@@ -29,7 +29,7 @@ import { CategoryPipe, TranslatePipe } from '../i18n/translate.pipe';
         <span class="font-semibold text-zinc-900 tabular-nums">{{ product().priceCents | price }}</span>
         <button
           type="button"
-          class="grid size-9 place-items-center rounded-full border border-zinc-200 text-zinc-700 transition-colors hover:border-zinc-900 hover:bg-zinc-900 hover:text-white"
+          class="grid size-9 place-items-center rounded-full border border-zinc-200 text-zinc-700 transition-colors hover:border-zinc-900 hover:bg-zinc-900 hover:text-zinc-50"
           [attr.aria-label]="'catalog.addToCart' | t: { name: product().name }"
           (click)="addToCart.emit()"
         >

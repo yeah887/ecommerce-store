@@ -1,0 +1,94 @@
+<h1 class="page-title">{{ 'settings.title' | t }}</h1>
+<p class="mt-2 text-zinc-500">{{ 'settings.subtitle' | t }}</p>
+
+<div class="mt-8 max-w-2xl space-y-6">
+  <section class="card p-6 sm:p-8">
+    <fieldset>
+      <legend class="section-title">{{ 'settings.appearance' | t }}</legend>
+      <div class="mt-4 grid grid-cols-3 gap-3">
+        @for (theme of themes; track theme.value) {
+          <label
+            class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border border-zinc-200 p-4 text-sm font-medium text-zinc-700 hover:border-zinc-300 has-[:checked]:border-zinc-900 has-[:checked]:text-zinc-900 has-[:checked]:ring-1 has-[:checked]:ring-zinc-900 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent-600"
+          >
+            <input
+              type="radio"
+              name="theme"
+              class="sr-only"
+              [value]="theme.value"
+              [checked]="settings.theme() === theme.value"
+              (change)="settings.setTheme(theme.value)"
+            />
+            <mat-icon aria-hidden="true">{{ theme.icon }}</mat-icon>
+            {{ theme.label | t }}
+          </label>
+        }
+      </div>
+    </fieldset>
+  </section>
+
+  <section class="card p-6 sm:p-8">
+    <fieldset>
+      <legend class="section-title">{{ 'settings.language' | t }}</legend>
+      <div class="mt-4 grid gap-2 sm:grid-cols-2">
+        <label
+          class="flex cursor-pointer items-center gap-3 rounded-xl border border-zinc-200 px-4 py-3 text-sm hover:border-zinc-300 has-[:checked]:border-zinc-900 has-[:checked]:ring-1 has-[:checked]:ring-zinc-900 sm:col-span-2"
+        >
+          <input
+            type="radio"
+            name="language"
+            class="size-4 accent-zinc-900"
+            value="auto"
+            [checked]="settings.language() === 'auto'"
+            (change)="settings.setLanguage('auto')"
+          />
+          <span>{{ 'settings.languageAuto' | t: { language: browserLanguageName() } }}</span>
+        </label>
+        @for (language of i18n.languages; track language.code) {
+          <label
+            class="flex cursor-pointer items-center gap-3 rounded-xl border border-zinc-200 px-4 py-3 text-sm hover:border-zinc-300 has-[:checked]:border-zinc-900 has-[:checked]:ring-1 has-[:checked]:ring-zinc-900"
+            [attr.lang]="language.code"
+          >
+            <input
+              type="radio"
+              name="language"
+              class="size-4 accent-zinc-900"
+              [value]="language.code"
+              [checked]="settings.language() === language.code"
+              (change)="settings.setLanguage(language.code)"
+            />
+            <span>{{ language.name }}</span>
+          </label>
+        }
+      </div>
+    </fieldset>
+  </section>
+
+  <section class="card p-6 sm:p-8">
+    <fieldset>
+      <legend class="section-title">{{ 'settings.pageSize' | t }}</legend>
+      <p class="mt-1 text-sm text-zinc-500">{{ 'settings.pageSizeHint' | t }}</p>
+      <div class="mt-4 flex gap-2">
+        @for (size of pageSizes; track size) {
+          <label
+            class="cursor-pointer rounded-full border border-zinc-200 px-4 py-1.5 text-sm font-medium text-zinc-700 tabular-nums hover:border-zinc-300 has-[:checked]:border-zinc-900 has-[:checked]:bg-zinc-900 has-[:checked]:text-zinc-50 has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent-600"
+          >
+            <input
+              type="radio"
+              name="pageSize"
+              class="sr-only"
+              [value]="size"
+              [checked]="settings.pageSize() === size"
+              (change)="settings.setPageSize(size)"
+            />
+            {{ size }}
+          </label>
+        }
+      </div>
+    </fieldset>
+  </section>
+
+  <div class="flex items-center justify-between gap-4">
+    <p class="text-sm text-zinc-500">{{ 'settings.savedHere' | t }}</p>
+    <button matButton="outlined" type="button" (click)="reset()">{{ 'settings.reset' | t }}</button>
+  </div>
+</div>

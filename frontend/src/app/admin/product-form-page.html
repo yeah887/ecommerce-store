@@ -82,11 +82,11 @@
 
         <ul class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
           @for (url of images(); track url; let i = $index, first = $first, last = $last) {
-            <li class="overflow-hidden rounded-xl border border-zinc-200 bg-white">
+            <li class="overflow-hidden rounded-xl border border-zinc-200 bg-surface">
               <div class="relative bg-zinc-100">
                 <img class="aspect-[4/3] w-full object-cover" [src]="url" [alt]="'admin.imageAlt' | t: { n: i + 1 }" />
                 @if (first) {
-                  <span class="absolute top-2 left-2 rounded-full bg-zinc-900/80 px-2 py-0.5 text-xs font-medium text-white">
+                  <span class="absolute top-2 left-2 rounded-full bg-black/75 px-2 py-0.5 text-xs font-medium text-white">
                     {{ 'admin.cover' | t }}
                   </span>
                 }
@@ -140,7 +140,7 @@
         <div class="mt-4 flex gap-2">
           <input
             type="url"
-            class="h-10 min-w-0 flex-1 rounded-xl border border-zinc-300 bg-white px-3 text-sm placeholder:text-zinc-400 disabled:bg-zinc-50"
+            class="h-10 min-w-0 flex-1 rounded-xl border border-zinc-300 bg-surface px-3 text-sm placeholder:text-zinc-400 disabled:bg-zinc-50"
             [placeholder]="'admin.imageLinkPlaceholder' | t"
             [attr.aria-label]="'admin.imageLink' | t"
             [value]="newImageUrl()"

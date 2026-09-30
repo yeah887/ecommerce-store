@@ -18,8 +18,8 @@ export interface FilterOption {
           class="rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors"
           [class]="
             active
-              ? 'border-zinc-900 bg-zinc-900 text-white'
-              : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50'
+              ? 'border-zinc-900 bg-zinc-900 text-zinc-50'
+              : 'border-zinc-200 bg-surface text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50'
           "
           [attr.aria-pressed]="active"
           (click)="valueChange.emit(option.value)"

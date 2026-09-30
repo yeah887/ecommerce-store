@@ -2,13 +2,14 @@
 
 A full-stack e-commerce store built as a learning and portfolio project. Nothing is really sold and no money moves: payment is simulated. The rest works end to end: catalog, cart, accounts, checkout, order history, and an admin area for products and orders.
 
-- **Frontend:** Angular 22 (standalone components, signals), styled with Tailwind CSS 4 and Angular Material, client-side rendered
+- **Frontend:** Angular 22 (standalone components, signals, NgRx Signal Store for settings), styled with Tailwind CSS 4 and Angular Material, client-side rendered
 - **Backend:** Express 5 REST API in TypeScript, Mongoose, sessions stored in MongoDB
 - **Database:** MongoDB 7
 - **Runs with:** Docker Compose, in a dev mode with hot reload or a production-like mode behind nginx
 
 ## Features
 
+- **Settings** (`/settings`, kept in the browser): light, dark or system theme, language, and products per page in the catalog. Managed by an NgRx Signal Store.
 - **Languages:** English, German, French, Spanish, Italian and Portuguese. The store starts in the browser's language, a menu in the header switches without reloading, and the choice is remembered. Prices and dates follow the language ("12,99 €" in German). Product names and descriptions stay as entered.
 - **Catalog:** product grid with text search, category filter and pagination. The state is kept in the URL, so views can be bookmarked and the back button works.
 - **Product pages:** details, a quantity picker and an image gallery with thumbnails, swipe and arrow-key navigation, and a full-screen view.
@@ -141,6 +142,7 @@ The first backend run downloads a MongoDB binary (about 180 MB unpacked) into `~
 ├── frontend/   Angular app (a folder per feature: catalog, product, cart, checkout, orders, auth, admin)
 │   └── src/
 │       ├── app/i18n/       translations: en.ts is the source, one file per language
+│       ├── app/settings/   SettingsStore (NgRx Signal Store) and the settings page
 │       ├── tailwind.css    design tokens and shared utilities (card, page-title, eyebrow, icon-*)
 │       └── styles.scss     Material theme, pointed at the same colours
 ├── compose.yaml            production-like stack
@@ -174,9 +176,11 @@ Every route is under `/api`. Errors always have the shape `{ "error": { "code", 
 - **Sample images** come from picsum.photos: random photos, not pictures of the products. They need internet access. Uploaded images are served by the API itself.
 - **Uploaded images are checked by their content:** the server detects the type from the file's first bytes and ignores the type the browser claims. SVG is not accepted, because it can contain scripts.
 - **Tailwind and Material together:** pages are styled with Tailwind utilities; Material still provides the interactive widgets (form fields, select, menu, dialog, table, paginator, snackbar), themed to the same zinc and indigo palette. Material's CSS is not in a cascade layer, so it beats Tailwind's layered utilities on Material elements: size a `mat-icon` with `icon-<px>` and colour it with an important utility such as `!text-zinc-400`.
+- **Dark mode without `dark:` everywhere:** pages use plain zinc shades and `bg-surface`; in the dark theme `tailwind.css` mirrors the zinc scale and swaps the surface colour, so each shade keeps its role. Use `bg-surface` for cards and inputs, and `text-zinc-50` (not `text-white`) on `bg-zinc-900`. `white` and `black` stay fixed, for text on colour and overlays on photos.
 - **Adding a language:** copy `frontend/src/app/i18n/de.ts`, translate it, and add the language to `LANGUAGES` and `loadLanguage` in `languages.ts`. The build fails if a translation is missing a key, and a unit test checks that every `{placeholder}` is kept. Templates use `{{ 'key' | t }}` (and `tn` for plurals); a mistyped key is a compile error. API errors are translated by their `code`.
 - **Out of scope for this version:**
   - real payments, taxes and shipping costs
   - inventory, reviews and guest checkout
   - emails and password reset
   - server-side rendering and end-to-end browser tests
+  - settings that follow a user's account across browsers

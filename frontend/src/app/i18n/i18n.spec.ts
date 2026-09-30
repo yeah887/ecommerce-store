@@ -5,9 +5,11 @@ import { de } from './de';
 import { en } from './en';
 import { es } from './es';
 import { fr } from './fr';
-import { I18n, LANGUAGE_STORAGE_KEY } from './i18n';
+import { I18n, resolveLanguage } from './i18n';
 import { it as italian } from './it';
+import type { Language } from './languages';
 import { pt } from './pt';
+import { SettingsStore } from '../settings/settings-store';
 
 const placeholders = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
 
@@ -21,46 +23,55 @@ describe('translations', () => {
 
 describe('I18n', () => {
   let i18n: I18n;
+  let settings: InstanceType<typeof SettingsStore>;
 
   beforeEach(() => {
     localStorage.clear();
+    TestBed.resetTestingModule();
+    settings = TestBed.inject(SettingsStore);
     i18n = TestBed.inject(I18n);
   });
 
   afterEach(() => vi.restoreAllMocks());
 
+  /** Changes the language setting and waits for its dictionary to load. */
+  async function useLanguage(language: Language): Promise<void> {
+    settings.setLanguage(language);
+    TestBed.tick();
+    await vi.waitFor(() => expect(i18n.language()).toBe(language));
+  }
+
   it('fills in placeholders', async () => {
-    await i18n.use('en');
+    await i18n.init();
     expect(i18n.t('cart.remove', { name: 'Mug' })).toBe('Remove Mug');
   });
 
-  it('switches language and remembers the choice', async () => {
-    await i18n.use('de');
+  it('follows the language setting', async () => {
+    await useLanguage('de');
 
     expect(i18n.t('cart.title')).toBe('Warenkorb');
     expect(i18n.locale()).toBe('de');
     expect(document.documentElement.lang).toBe('de');
-    expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBe('de');
   });
 
   it('picks plural forms by language rules', async () => {
-    await i18n.use('en');
+    await useLanguage('en');
     expect(i18n.tn('catalog.count', 1)).toBe('1 product');
     expect(i18n.tn('catalog.count', 0)).toBe('0 products');
 
-    await i18n.use('fr');
+    await useLanguage('fr');
     // French treats 0 as singular.
     expect(i18n.tn('catalog.count', 0)).toBe('0 produit');
     expect(i18n.tn('catalog.count', 2)).toBe('2 produits');
   });
 
   it('formats in the language: European Portuguese for pt', async () => {
-    await i18n.use('pt');
+    await useLanguage('pt');
     expect(i18n.locale()).toBe('pt-PT');
   });
 
   it('translates API errors by code and falls back for unknown ones', async () => {
-    await i18n.use('es');
+    await useLanguage('es');
     const error = (code: string) =>
       new HttpErrorResponse({ status: 400, error: { error: { code, message: 'English from the server' } } });
 
@@ -68,19 +79,20 @@ describe('I18n', () => {
     expect(i18n.errorMessage(error('something_new'), 'checkout.failed')).toBe(es['checkout.failed']);
     expect(i18n.errorMessage(new Error('network'))).toBe(es['error.generic']);
   });
+});
 
-  it('starts with the saved language, else the first supported browser language, else English', async () => {
+describe('resolveLanguage', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  it('uses a chosen language as is', () => {
+    expect(resolveLanguage('de')).toBe('de');
+  });
+
+  it('for "auto", picks the first supported browser language, else English', () => {
     vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['ja-JP', 'it-IT', 'de']);
-    await i18n.init();
-    expect(i18n.language()).toBe('it');
+    expect(resolveLanguage('auto')).toBe('it');
 
-    localStorage.setItem(LANGUAGE_STORAGE_KEY, 'fr');
-    await i18n.init();
-    expect(i18n.language()).toBe('fr');
-
-    localStorage.clear();
     vi.spyOn(navigator, 'languages', 'get').mockReturnValue(['ja-JP']);
-    await i18n.init();
-    expect(i18n.language()).toBe('en');
+    expect(resolveLanguage('auto')).toBe('en');
   });
 });

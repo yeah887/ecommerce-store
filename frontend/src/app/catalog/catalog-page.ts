@@ -8,13 +8,13 @@ import { MatPaginatorModule, type PageEvent } from '@angular/material/paginator'
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import {
   CATEGORIES,
-  DEFAULT_PAGE_SIZE,
   isCategory,
   type Page,
   type Product,
 } from '@store/shared';
 import { AddToCart } from '../cart/add-to-cart';
 import { I18n } from '../i18n/i18n';
+import { SettingsStore } from '../settings/settings-store';
 import { FilterPills, type FilterOption } from '../shared/filter-pills';
 import { ProductCard } from './product-card';
 import { TranslatePipe, TranslatePluralPipe } from '../i18n/translate.pipe';
@@ -51,7 +51,8 @@ export class CatalogPage {
     { value: '', label: this.i18n.t('common.all') },
     ...CATEGORIES.map((category) => ({ value: category, label: this.i18n.t(`category.${category}`) })),
   ]);
-  protected readonly pageSize = DEFAULT_PAGE_SIZE;
+  /** Products per page, from the viewer's settings. */
+  protected readonly pageSize = inject(SettingsStore).pageSize;
 
   protected readonly searchText = linkedSignal(() => this.q() ?? '');
   protected readonly activeCategory = computed(() => {
@@ -66,7 +67,7 @@ export class CatalogPage {
   protected readonly products = httpResource<Page<Product>>(() => {
     const params: Record<string, string | number> = {
       page: this.pageNumber(),
-      pageSize: this.pageSize,
+      pageSize: this.pageSize(),
     };
     const q = this.q()?.trim();
     const category = this.activeCategory();

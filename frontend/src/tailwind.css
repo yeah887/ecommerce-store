@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* SettingsStore puts `dark` on <html> for the dark theme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /*
  * Design tokens. Neutrals are Tailwind's zinc and the accent is indigo;
  * styles.scss points Angular Material's system colours at the same values.
@@ -15,9 +18,59 @@
   --color-accent-600: var(--color-indigo-600);
   --color-accent-700: var(--color-indigo-700);
   --color-accent-900: var(--color-indigo-900);
+
+  /* Cards, inputs, header: white in the light theme. */
+  --color-surface: #ffffff;
+}
+
+/*
+ * Dark theme. Pages use plain zinc shades (bg-zinc-50 page, text-zinc-900 text, border-zinc-200 lines),
+ * so the scale is mirrored here instead of adding dark: variants everywhere: every shade keeps its role.
+ * `white` and `black` stay fixed for text on colour and for overlays on photos. Tinted boxes
+ * (errors, status chips, notes) get dark backgrounds and light text.
+ */
+.dark {
+  --color-surface: #18181b;
+  --color-zinc-50: #0f0f11;
+  --color-zinc-100: #1c1c1f;
+  --color-zinc-200: #2a2a2e;
+  --color-zinc-300: #3a3a3f;
+  --color-zinc-400: #71717b;
+  --color-zinc-500: #9f9fa9;
+  --color-zinc-600: #b8b8c0;
+  --color-zinc-700: #d4d4d8;
+  --color-zinc-800: #e4e4e7;
+  --color-zinc-900: #f4f4f5;
+  --color-zinc-950: #fafafa;
+
+  --color-indigo-50: #1e1b4b;
+  --color-indigo-100: #312e81;
+  --color-indigo-700: #a5b4fc;
+  --color-indigo-900: #c7d2fe;
+  --color-red-50: #2a1416;
+  --color-red-600: #f87171;
+  --color-red-800: #fecaca;
+  --color-emerald-50: #0d2a1f;
+  --color-emerald-600: #34d399;
+  --color-emerald-700: #6ee7b7;
+  --color-amber-50: #2b2110;
+  --color-amber-600: #fbbf24;
+  --color-amber-800: #fcd34d;
+  --color-sky-50: #0c2233;
+  --color-sky-700: #7dd3fc;
+}
+
+/* The full-screen image viewer is dark in both themes, so it keeps the light theme's greys. */
+.dark .gallery-lightbox {
+  --color-zinc-300: #d4d4d8;
+  --color-zinc-500: #71717b;
 }
 
 @layer base {
+  body {
+    @apply bg-zinc-50 text-zinc-900;
+  }
+
   :where(a, button, input, [tabindex]):focus-visible {
     outline: 2px solid var(--color-accent-600);
     outline-offset: 2px;
@@ -26,7 +79,7 @@
 
 /* The few patterns every page shares. */
 @utility card {
-  @apply rounded-2xl border border-zinc-200 bg-white;
+  @apply rounded-2xl border border-zinc-200 bg-surface;
 }
 
 @utility page-title {

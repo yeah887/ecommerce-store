@@ -9,7 +9,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
   imports: [MatIconModule, TranslatePipe],
   template: `
     <div
-      class="inline-flex h-11 items-center rounded-xl border border-zinc-300 bg-white"
+      class="inline-flex h-11 items-center rounded-xl border border-zinc-300 bg-surface"
       role="group"
       [attr.aria-label]="label() ?? ('quantity.label' | t)"
     >

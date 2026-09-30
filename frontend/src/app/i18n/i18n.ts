@@ -1,20 +1,23 @@
 import { registerLocaleData } from '@angular/common';
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
 import type { ApiErrorBody } from '@store/shared';
+import { SettingsStore, type LanguageSetting } from '../settings/settings-store';
 import { apiError } from '../shared/api-error';
 import { en, type TranslationKey, type Translations } from './en';
 import { LANGUAGES, isLanguage, loadLanguage, type Language } from './languages';
-
-export const LANGUAGE_STORAGE_KEY = 'store.language';
 
 type Params = Record<string, string | number>;
 /** Keys that have `.one` / `.other` plural forms, without the suffix. */
 export type PluralKey = TranslationKey extends infer K ? (K extends `${infer Base}.other` ? Base : never) : never;
 
-/** The UI language: picks one on start (saved choice, else the browser's), translates, and formats. */
+/**
+ * The UI language: follows the language setting (a language, or the browser's), loads its dictionary,
+ * translates and formats. Change the language through `SettingsStore.setLanguage`.
+ */
 @Injectable({ providedIn: 'root' })
 export class I18n {
   readonly languages = LANGUAGES;
+  private readonly settings = inject(SettingsStore);
   private readonly current = signal<Language>('en');
   private readonly translations = signal<Translations>(en);
 
@@ -22,24 +25,27 @@ export class I18n {
   /** Angular/Intl locale id for number, date and plural formatting. */
   readonly locale = computed(() => LANGUAGES.find((l) => l.code === this.current())!.locale);
 
-  /** Loads the saved or browser language; runs before the first render. */
-  async init(): Promise<void> {
-    await this.use(this.initialLanguage(), false);
+  constructor() {
+    // Later changes to the setting load the new language; `init` handles the first one.
+    effect(() => {
+      const language = resolveLanguage(this.settings.language());
+      untracked(() => {
+        if (language !== this.current()) void this.load(language);
+      });
+    });
   }
 
-  async use(language: Language, remember = true): Promise<void> {
+  /** Loads the language from the settings; runs before the first render so nothing flashes in English. */
+  async init(): Promise<void> {
+    await this.load(resolveLanguage(this.settings.language()));
+  }
+
+  private async load(language: Language): Promise<void> {
     const { translations, localeData } = await loadLanguage(language);
     registerLocaleData(localeData);
     this.translations.set(translations);
     this.current.set(language);
     document.documentElement.lang = language;
-    if (remember) {
-      try {
-        localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
-      } catch {
-        // Storage can be unavailable (private mode); the choice then lasts for this visit.
-      }
-    }
   }
 
   /** Translates a key, filling `{name}` placeholders from `params`. */
@@ -60,18 +66,19 @@ export class I18n {
     const key = body && (`error.${body.code}` as TranslationKey);
     return key && key in en ? this.t(key) : this.t(fallback);
   }
+}
 
-  private initialLanguage(): Language {
-    try {
-      const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
-      if (isLanguage(saved)) return saved;
-    } catch {
-      // Fall through to the browser's languages.
-    }
-    for (const tag of navigator.languages ?? [navigator.language]) {
-      const code = tag.toLowerCase().split('-')[0];
-      if (isLanguage(code)) return code;
-    }
-    return 'en';
+/** The language to show for a setting: 'auto' picks the first supported browser language, else English. */
+export function resolveLanguage(setting: LanguageSetting): Language {
+  if (setting !== 'auto') return setting;
+  return browserLanguage() ?? 'en';
+}
+
+/** The first of the browser's languages that the store supports. */
+export function browserLanguage(): Language | undefined {
+  for (const tag of navigator.languages ?? [navigator.language]) {
+    const code = tag.toLowerCase().split('-')[0];
+    if (isLanguage(code)) return code;
   }
+  return undefined;
 }

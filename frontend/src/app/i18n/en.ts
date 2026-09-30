@@ -10,6 +10,7 @@ export const en = {
   'nav.manageProducts': 'Manage products',
   'nav.manageOrders': 'Manage orders',
   'nav.logout': 'Log out',
+  'nav.settings': 'Settings',
   'header.accountMenu': 'Account menu for {name}',
   'header.language': 'Language: {language}',
   'header.cart.one': 'Cart, {count} item',
@@ -34,6 +35,7 @@ export const en = {
   'title.register': 'Create an account',
   'title.status': 'System status',
   'title.notFound': 'Page not found',
+  'title.settings': 'Settings',
 
   // Shared words
   'common.all': 'All',
@@ -276,6 +278,21 @@ export const en = {
   'admin.updateFailed': "Couldn't update the order",
 
   // Material paginator
+  // Settings
+  'settings.title': 'Settings',
+  'settings.subtitle': 'How the store looks and behaves for you.',
+  'settings.appearance': 'Appearance',
+  'settings.themeSystem': 'System',
+  'settings.themeLight': 'Light',
+  'settings.themeDark': 'Dark',
+  'settings.language': 'Language',
+  'settings.languageAuto': 'Browser language ({language})',
+  'settings.pageSize': 'Products per page',
+  'settings.pageSizeHint': 'How many products the catalog shows at once.',
+  'settings.savedHere': 'Settings are saved in this browser.',
+  'settings.reset': 'Reset to defaults',
+  'settings.resetDone': 'Settings reset',
+
   'paginator.itemsPerPage': 'Items per page:',
   'paginator.next': 'Next page',
   'paginator.previous': 'Previous page',

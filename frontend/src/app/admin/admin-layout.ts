@@ -18,7 +18,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
           <a
             class="rounded-lg px-4 py-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900"
             [routerLink]="link.path"
-            routerLinkActive="bg-white !text-zinc-900 shadow-sm"
+            routerLinkActive="bg-surface !text-zinc-900 shadow-sm"
             ariaCurrentWhenActive="page"
           >
             {{ link.label | t }}

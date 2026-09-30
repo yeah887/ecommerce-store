@@ -13,7 +13,7 @@
       type="search"
       [placeholder]="'common.searchProducts' | t"
       [attr.aria-label]="'common.searchProducts' | t"
-      class="h-10 w-full rounded-xl border border-zinc-300 bg-white pr-3 pl-10 text-sm placeholder:text-zinc-400"
+      class="h-10 w-full rounded-xl border border-zinc-300 bg-surface pr-3 pl-10 text-sm placeholder:text-zinc-400"
       [ngModel]="searchText()"
       (ngModelChange)="searchText.set($event)"
     />

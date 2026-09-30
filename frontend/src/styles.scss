@@ -83,10 +83,8 @@ html {
   );
 }
 
+// Page colours come from tailwind.css, so they follow the theme; color-scheme is set by SettingsStore.
 body {
-  color-scheme: light;
-  background-color: #fafafa;
-  color: #18181b;
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   margin: 0;
@@ -102,4 +100,45 @@ body {
 .gallery-lightbox .mat-mdc-dialog-surface {
   background: #09090b;
   border-radius: 0;
+}
+
+// Dark theme for Material components, matching the mirrored zinc scale in tailwind.css.
+html.dark {
+  @include mat.theme-overrides(
+    (
+      primary: #f4f4f5,
+      on-primary: #18181b,
+      primary-container: #1e1b4b,
+      on-primary-container: #c7d2fe,
+      secondary-container: #27272a,
+      on-secondary-container: #f4f4f5,
+      surface: #18181b,
+      on-surface: #f4f4f5,
+      on-surface-variant: #a1a1aa,
+      surface-container-lowest: #0f0f11,
+      surface-container-low: #151518,
+      surface-container: #18181b,
+      surface-container-high: #232327,
+      surface-container-highest: #2a2a2e,
+      outline: #3f3f46,
+      outline-variant: #2a2a2e,
+      error: #f87171,
+      error-container: #2a1416,
+      on-error-container: #fecaca,
+      inverse-surface: #f4f4f5,
+      inverse-on-surface: #18181b,
+      inverse-primary: #4f46e5,
+    )
+  );
+  @include mat.progress-bar-overrides(
+    (
+      track-color: #312e81,
+    )
+  );
+  @include mat.table-overrides(
+    (
+      header-headline-color: #a1a1aa,
+      row-item-outline-color: #232327,
+    )
+  );
 }

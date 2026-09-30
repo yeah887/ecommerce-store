@@ -32,7 +32,7 @@ import { TranslatePipe } from '../i18n/translate.pipe';
       @if (images().length > 1) {
         <button
           type="button"
-          class="absolute top-1/2 left-3 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-zinc-900 shadow-sm ring-1 ring-zinc-900/5 hover:bg-white"
+          class="absolute top-1/2 left-3 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-black shadow-sm ring-1 ring-black/5 hover:bg-white"
           [attr.aria-label]="'gallery.previous' | t"
           (click)="step(-1)"
         >
@@ -40,14 +40,14 @@ import { TranslatePipe } from '../i18n/translate.pipe';
         </button>
         <button
           type="button"
-          class="absolute top-1/2 right-3 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-zinc-900 shadow-sm ring-1 ring-zinc-900/5 hover:bg-white"
+          class="absolute top-1/2 right-3 grid size-10 -translate-y-1/2 place-items-center rounded-full bg-white/90 text-black shadow-sm ring-1 ring-black/5 hover:bg-white"
           [attr.aria-label]="'gallery.next' | t"
           (click)="step(1)"
         >
           <mat-icon>chevron_right</mat-icon>
         </button>
         <span
-          class="pointer-events-none absolute right-3 bottom-3 rounded-full bg-zinc-900/70 px-2.5 py-1 text-xs font-medium text-white tabular-nums"
+          class="pointer-events-none absolute right-3 bottom-3 rounded-full bg-black/70 px-2.5 py-1 text-xs font-medium text-white tabular-nums"
           aria-hidden="true"
         >
           {{ index() + 1 }} / {{ images().length }}
