@@ -50,7 +50,10 @@ export class OrderPage {
   protected async cancel(order: Order): Promise<void> {
     const confirmed = await this.confirm.ask({
       title: this.i18n.t('order.cancelTitle'),
-      message: this.i18n.t('order.cancelMessage', { number: order.number }),
+      message:
+        order.paymentProvider === 'mock'
+          ? this.i18n.t('order.cancelMessage', { number: order.number })
+          : this.i18n.t('order.cancelMessageRefund', { number: order.number, total: this.i18n.price(order.totalCents) }),
       confirmLabel: this.i18n.t('order.cancel'),
       cancelLabel: this.i18n.t('order.keep'),
     });

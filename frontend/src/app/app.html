@@ -115,7 +115,16 @@
     <div
       class="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-sm text-zinc-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8"
     >
-      <p>{{ 'footer.demo' | t }}</p>
+      <p>
+        @switch (payments.mode()) {
+          @case ('mock') {
+            {{ 'footer.demo' | t }}
+          }
+          @case ('sandbox') {
+            {{ 'footer.sandbox' | t }}
+          }
+        }
+      </p>
       <nav class="flex gap-4">
         <a routerLink="/settings" class="hover:text-zinc-900">{{ 'nav.settings' | t }}</a>
         <a routerLink="/status" class="hover:text-zinc-900">{{ 'footer.status' | t }}</a>

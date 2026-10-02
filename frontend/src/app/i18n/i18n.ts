@@ -1,6 +1,6 @@
-import { registerLocaleData } from '@angular/common';
+import { formatCurrency, registerLocaleData } from '@angular/common';
 import { Injectable, computed, effect, inject, signal, untracked } from '@angular/core';
-import type { ApiErrorBody } from '@store/shared';
+import { CURRENCY, type ApiErrorBody } from '@store/shared';
 import { SettingsStore, type LanguageSetting } from '../settings/settings-store';
 import { apiError } from '../shared/api-error';
 import { en, type TranslationKey, type Translations } from './en';
@@ -58,6 +58,11 @@ export class I18n {
   tn(key: PluralKey, count: number, params?: Params): string {
     const form = new Intl.PluralRules(this.locale()).select(count) === 'one' ? 'one' : 'other';
     return this.t(`${key}.${form}` as TranslationKey, { count, ...params });
+  }
+
+  /** An amount of cents in the store currency, formatted for the current language: "€12.99", "12,99 €". */
+  price(cents: number): string {
+    return formatCurrency(cents / 100, this.locale(), '€', CURRENCY, '1.2-2');
   }
 
   /** A translated message for a failed API call: by error code when known, else the fallback. */

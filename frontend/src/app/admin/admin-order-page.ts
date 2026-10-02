@@ -70,11 +70,14 @@ export class AdminOrderPage {
   protected async setStatus(order: AdminOrder, status: OrderStatus): Promise<void> {
     const confirmed = await this.confirm.ask({
       title: `${this.i18n.t(ACTION_LABELS[status])}?`,
-      message: this.i18n.t('admin.statusMessage', {
-        number: order.number,
-        from: this.i18n.t(`status.${order.status}`),
-        to: this.i18n.t(`status.${status}`),
-      }),
+      message:
+        status === 'cancelled' && order.paymentProvider !== 'mock'
+          ? this.i18n.t('admin.statusMessageRefund', { number: order.number, total: this.i18n.price(order.totalCents) })
+          : this.i18n.t('admin.statusMessage', {
+              number: order.number,
+              from: this.i18n.t(`status.${order.status}`),
+              to: this.i18n.t(`status.${status}`),
+            }),
       confirmLabel: this.i18n.t(ACTION_LABELS[status]),
       cancelLabel: this.i18n.t('admin.back'),
     });

@@ -3,6 +3,8 @@ export interface AdminSeed {
   password: string;
 }
 
+import type { PayPalConfig } from './paypal.js';
+
 export interface Config {
   port: number;
   mongoUrl: string;
@@ -13,6 +15,8 @@ export interface Config {
   /** First admin account, created on startup if missing. */
   admin?: AdminSeed;
   bcryptRounds: number;
+  /** Real payments through PayPal; without it, payments are simulated. */
+  paypal?: PayPalConfig;
 }
 
 const DEV_SESSION_SECRET = 'dev-only-insecure-session-secret';
@@ -46,7 +50,22 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     cookieSecure: parseBoolean(env.COOKIE_SECURE, 'COOKIE_SECURE') ?? production,
     admin: adminSeed(env),
     bcryptRounds: 12,
+    paypal: paypalConfig(env),
   };
+}
+
+function paypalConfig(env: NodeJS.ProcessEnv): PayPalConfig | undefined {
+  const clientId = env.PAYPAL_CLIENT_ID?.trim();
+  const clientSecret = env.PAYPAL_CLIENT_SECRET?.trim();
+  if (!clientId && !clientSecret) return undefined;
+  if (!clientId || !clientSecret) {
+    throw new Error('Set both PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET, or neither');
+  }
+  const environment = env.PAYPAL_ENVIRONMENT?.trim() || 'sandbox';
+  if (environment !== 'sandbox' && environment !== 'live') {
+    throw new Error('PAYPAL_ENVIRONMENT must be "sandbox" or "live"');
+  }
+  return { clientId, clientSecret, environment };
 }
 
 function adminSeed(env: NodeJS.ProcessEnv): AdminSeed | undefined {

@@ -6,6 +6,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from './auth/auth.service';
 import { CartStore } from './cart/cart-store';
 import { I18n } from './i18n/i18n';
+import { PaymentMode } from './payments/payment-mode';
 import { SettingsStore } from './settings/settings-store';
 import { TranslatePipe, TranslatePluralPipe } from './i18n/translate.pipe';
 
@@ -19,6 +20,7 @@ export class App {
   protected readonly auth = inject(AuthService);
   protected readonly i18n = inject(I18n);
   protected readonly settings = inject(SettingsStore);
+  protected readonly payments = inject(PaymentMode);
   protected readonly currentLanguageName = computed(
     () => this.i18n.languages.find((language) => language.code === this.i18n.language())!.name,
   );

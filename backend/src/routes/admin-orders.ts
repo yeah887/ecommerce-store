@@ -11,7 +11,9 @@ import {
 } from '@store/shared';
 import { HttpError } from '../errors.js';
 import { orderModel, toOrder, toOrderSummary, type OrderDocument } from '../models/order.js';
+import { cancelOrder } from '../order-cancellation.js';
 import { assertTransition } from '../order-status.js';
+import type { PaymentProvider } from '../payments.js';
 import { FieldErrors, queryPositiveInt, queryString } from '../validation.js';
 
 interface PopulatedOwner {
@@ -21,7 +23,7 @@ interface PopulatedOwner {
 }
 
 /** Order management for all customers. Mounted behind `requireAdmin`. */
-export function adminOrdersRouter(db: Connection): Router {
+export function adminOrdersRouter(db: Connection, payments: PaymentProvider): Router {
   const router = Router();
   const orders = orderModel(db);
 
@@ -80,12 +82,17 @@ export function adminOrdersRouter(db: Connection): Router {
       throw new HttpError(400, 'validation_failed', 'Unknown status', { status: 'Unknown status' });
     }
     const order = await findOrder(req.params.id);
-    assertTransition(order.status, next);
 
-    // Compare-and-set: fails if the status changed since we read it (e.g. the customer cancelled).
-    const result = await orders.updateOne({ _id: order._id, status: order.status }, { status: next });
-    if (result.modifiedCount === 0) {
-      throw new HttpError(409, 'invalid_status_transition', 'The order changed; please reload it');
+    if (next === 'cancelled') {
+      // Paid orders are refunded as part of cancelling.
+      await cancelOrder(orders, order as unknown as OrderDocument, payments);
+    } else {
+      assertTransition(order.status, next);
+      // Compare-and-set: fails if the status changed since we read it (e.g. the customer cancelled).
+      const result = await orders.updateOne({ _id: order._id, status: order.status }, { status: next });
+      if (result.modifiedCount === 0) {
+        throw new HttpError(409, 'invalid_status_transition', 'The order changed; please reload it');
+      }
     }
 
     const body: AdminOrder = toAdminOrder(await findOrder(req.params.id));

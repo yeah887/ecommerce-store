@@ -8,6 +8,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import type { Product } from '@store/shared';
 import { AddToCart } from '../cart/add-to-cart';
 import { I18n } from '../i18n/i18n';
+import { PaymentMode } from '../payments/payment-mode';
 import { NotFound } from '../not-found/not-found';
 import { QuantityPicker } from '../shared/quantity-picker';
 import { PricePipe } from '../shared/price.pipe';
@@ -42,6 +43,7 @@ export class ProductPage {
 
   protected readonly addToCart = inject(AddToCart);
   private readonly i18n = inject(I18n);
+  protected readonly payments = inject(PaymentMode);
   protected readonly quantity = signal(1);
 
   constructor() {

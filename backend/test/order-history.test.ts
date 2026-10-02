@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import type { Order, OrderSummary } from '@store/shared';
 import { productModel } from '../src/models/product.js';
 import { useTestApp } from './test-app.js';
+import { checkout } from './checkout-helper.js';
 
 const address = { name: 'A', street: 'S 1', postalCode: '1', city: 'C', country: 'D' };
 
@@ -24,7 +25,7 @@ describe('order history and cancelling', () => {
   }
 
   async function placeOrder(client: request.Agent, quantity = 1): Promise<Order> {
-    const res = await client.post('/api/orders').send({ lines: [{ productId, quantity }], shippingAddress: address });
+    const res = await checkout(client, { lines: [{ productId, quantity }], shippingAddress: address });
     expect(res.status).toBe(201);
     return res.body;
   }

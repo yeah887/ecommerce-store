@@ -3,6 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import type { Product } from '@store/shared';
 import { productModel } from '../src/models/product.js';
 import { TEST_ADMIN, useTestApp } from './test-app.js';
+import { checkout } from './checkout-helper.js';
 
 const lamp = {
   name: 'Desk Lamp',
@@ -146,7 +147,7 @@ describe('admin product management', () => {
   it('keeps past orders intact when a product is edited or deleted', async () => {
     const product = (await admin.post('/api/admin/products').send({ ...lamp, name: 'Ordered Lamp' })).body as Product;
     const order = (
-      await customer.post('/api/orders').send({
+      await checkout(customer, {
         lines: [{ productId: product.id, quantity: 2 }],
         shippingAddress: { name: 'C', street: 'S', postalCode: '1', city: 'C', country: 'D' },
       })

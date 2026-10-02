@@ -40,4 +40,24 @@ describe('loadConfig', () => {
     expect(() => loadConfig({ ...base, ADMIN_EMAIL: 'a@b.co' })).toThrow(/ADMIN_PASSWORD/);
     expect(() => loadConfig({ ...base, ADMIN_EMAIL: 'a@b.co', ADMIN_PASSWORD: 'short' })).toThrow(/8 characters/);
   });
+
+  it('simulates payments unless PayPal credentials are set, and defaults PayPal to the sandbox', () => {
+    expect(loadConfig(base).paypal).toBeUndefined();
+    expect(loadConfig({ ...base, PAYPAL_CLIENT_ID: 'id', PAYPAL_CLIENT_SECRET: 'secret' }).paypal).toEqual({
+      clientId: 'id',
+      clientSecret: 'secret',
+      environment: 'sandbox',
+    });
+    expect(
+      loadConfig({ ...base, PAYPAL_CLIENT_ID: 'id', PAYPAL_CLIENT_SECRET: 'secret', PAYPAL_ENVIRONMENT: 'live' }).paypal
+        ?.environment,
+    ).toBe('live');
+  });
+
+  it('rejects incomplete or unknown PayPal settings', () => {
+    expect(() => loadConfig({ ...base, PAYPAL_CLIENT_ID: 'id' })).toThrow(/PAYPAL_CLIENT_SECRET/);
+    expect(() => loadConfig({ ...base, PAYPAL_CLIENT_ID: 'id', PAYPAL_CLIENT_SECRET: 's', PAYPAL_ENVIRONMENT: 'prod' })).toThrow(
+      /PAYPAL_ENVIRONMENT/,
+    );
+  });
 });

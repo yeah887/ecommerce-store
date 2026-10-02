@@ -20,6 +20,9 @@
       <p class="mt-1 text-sm text-zinc-500">
         {{ 'admin.placedOnPayment' | t: { date: o.createdAt | localDate: 'medium' } }}
         <span class="font-mono">{{ o.paymentReference }}</span>
+        @if (o.refundReference) {
+          · {{ 'admin.refunded' | t }} <span class="font-mono">{{ o.refundReference }}</span>
+        }
       </p>
     </div>
     <app-status-chip [status]="o.status" />

@@ -2,6 +2,7 @@ export * from './api-error.js';
 export * from './auth.js';
 export * from './cart.js';
 export * from './categories.js';
+export * from './checkout.js';
 export * from './health.js';
 export * from './image.js';
 export * from './order.js';

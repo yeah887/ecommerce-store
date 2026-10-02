@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,6 +10,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { firstValueFrom } from 'rxjs';
 import {
   SHIPPING_FIELD_MAX_LENGTH,
+  type CheckoutStarted,
   type CreateOrderRequest,
   type Order,
   type ShippingAddress,
@@ -18,6 +19,8 @@ import { AuthService } from '../auth/auth.service';
 import { CartStore, type CartLine } from '../cart/cart-store';
 import type { TranslationKey } from '../i18n/en';
 import { I18n } from '../i18n/i18n';
+import { PaymentMode } from '../payments/payment-mode';
+import { PayPalSdk, type PayPalButtons, type PayPalButtonsOptions, type PayPalNamespace } from '../payments/paypal-sdk';
 import { apiError } from '../shared/api-error';
 import { PricePipe } from '../shared/price.pipe';
 import { TranslatePipe } from '../i18n/translate.pipe';
@@ -50,6 +53,13 @@ export class CheckoutPage {
   private readonly router = inject(Router);
   protected readonly cart = inject(CartStore);
   private readonly i18n = inject(I18n);
+  private readonly paymentMode = inject(PaymentMode);
+  private readonly paypalSdk = inject(PayPalSdk);
+
+  /** 'mock': our own button; 'sandbox' / 'live': PayPal's buttons. */
+  protected readonly mode = this.paymentMode.mode;
+  protected readonly paypalUnavailable = signal(false);
+  private readonly paypalContainer = viewChild<ElementRef<HTMLElement>>('paypalButtons');
 
   private readonly max = SHIPPING_FIELD_MAX_LENGTH;
   protected readonly form = inject(FormBuilder).nonNullable.group({
@@ -80,29 +90,106 @@ export class CheckoutPage {
     this.rejected().length > 0 && this.stillRejected().length === 0 ? null : this.error(),
   );
 
+  constructor() {
+    // Show PayPal's buttons once PayPal is known to be on and their container is on the page.
+    effect((onCleanup) => {
+      const config = this.paymentMode.config.hasValue() ? this.paymentMode.config.value() : undefined;
+      const container = this.paypalContainer()?.nativeElement;
+      if (config?.provider !== 'paypal' || !container) return;
+
+      let buttons: PayPalButtons | undefined;
+      let cancelled = false;
+      this.paypalSdk
+        .load(config.clientId, config.currency)
+        .then(async (paypal) => {
+          if (cancelled) return;
+          buttons = paypal.Buttons(this.paypalOptions(paypal));
+          await buttons.render(container);
+        })
+        .catch(() => this.paypalUnavailable.set(true));
+      onCleanup(() => {
+        cancelled = true;
+        void buttons?.close();
+      });
+    });
+  }
+
+  /** Simulated payment: start the checkout and complete it straight away. */
   protected async placeOrder(): Promise<void> {
-    if (this.form.invalid) {
+    // With PayPal, paying goes through its buttons; submitting the form (Enter) only checks the address.
+    if (this.form.invalid || this.mode() !== 'mock') {
       this.form.markAllAsTouched();
       return;
     }
     const lines = this.cart.lines();
-    const request: CreateOrderRequest = {
-      lines: lines.map(({ productId, quantity }) => ({ productId, quantity })),
-      shippingAddress: this.form.getRawValue(),
-    };
-
     this.placing.set(true);
-    this.error.set(null);
-    this.rejected.set([]);
     try {
-      const order = await firstValueFrom(this.http.post<Order>('/api/orders', request));
-      this.cart.clear();
-      await this.router.navigate(['/checkout/confirmation', order.id], { state: { order } });
+      const started = await this.startCheckout(lines);
+      await this.completeCheckout(started.checkoutId);
     } catch (err) {
       this.showError(err, lines);
     } finally {
       this.placing.set(false);
     }
+  }
+
+  /** PayPal: the buyer approves in PayPal's window between starting and completing the checkout. */
+  private paypalOptions(paypal: PayPalNamespace): PayPalButtonsOptions {
+    let started: CheckoutStarted | undefined;
+    let lines: CartLine[] = [];
+    return {
+      fundingSource: paypal.FUNDING.PAYPAL,
+      style: { layout: 'vertical', shape: 'rect', label: 'pay', height: 48 },
+      onClick: (_data, actions) => {
+        if (this.form.invalid) {
+          this.form.markAllAsTouched();
+          return actions.reject();
+        }
+        return actions.resolve();
+      },
+      createOrder: async () => {
+        lines = this.cart.lines();
+        try {
+          started = await this.startCheckout(lines);
+          return started.providerOrderId;
+        } catch (err) {
+          this.showError(err, lines);
+          throw err;
+        }
+      },
+      onApprove: async (_data, actions) => {
+        this.placing.set(true);
+        try {
+          await this.completeCheckout(started!.checkoutId);
+        } catch (err) {
+          // PayPal's advice for a declined funding source: reopen its window so the buyer can pick another.
+          if (apiError(err)?.code === 'payment_declined') return actions.restart();
+          this.showError(err, lines);
+        } finally {
+          this.placing.set(false);
+        }
+      },
+      onCancel: () => this.error.set(this.i18n.t('checkout.paymentCancelled')),
+      onError: () => {
+        if (!this.error()) this.error.set(this.i18n.t('checkout.failed'));
+      },
+    };
+  }
+
+  private async startCheckout(lines: CartLine[]): Promise<CheckoutStarted> {
+    this.error.set(null);
+    this.rejected.set([]);
+    const request: CreateOrderRequest = {
+      lines: lines.map(({ productId, quantity }) => ({ productId, quantity })),
+      shippingAddress: this.form.getRawValue(),
+    };
+    return firstValueFrom(this.http.post<CheckoutStarted>('/api/checkout', request));
+  }
+
+  private async completeCheckout(checkoutId: string): Promise<void> {
+    const order = await firstValueFrom(this.http.post<Order>(`/api/checkout/${checkoutId}/complete`, {}));
+    this.cart.clear();
+    await this.router.navigate(['/checkout/confirmation', order.id], { state: { order } });
   }
 
   private showError(err: unknown, sentLines: CartLine[]): void {

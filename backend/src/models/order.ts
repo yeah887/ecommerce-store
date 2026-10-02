@@ -30,7 +30,10 @@ const orderSchema = new Schema(
     totalCents: { type: Number, required: true, min: 1 },
     shippingAddress: { type: shippingAddressSchema, required: true },
     status: { type: String, required: true, enum: ORDER_STATUSES, default: 'placed' },
+    // Orders from before real payments have no provider stored: they were simulated.
+    paymentProvider: { type: String, enum: ['mock', 'paypal'], default: 'mock' },
     paymentReference: { type: String, required: true },
+    refundReference: { type: String },
   },
   { timestamps: true },
 );
@@ -66,7 +69,9 @@ export function toOrder(order: OrderDocument): Order {
       country: order.shippingAddress.country,
     },
     status: order.status,
+    paymentProvider: order.paymentProvider ?? 'mock',
     paymentReference: order.paymentReference,
+    ...(order.refundReference ? { refundReference: order.refundReference } : {}),
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),
   };

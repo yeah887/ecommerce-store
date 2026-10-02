@@ -53,8 +53,20 @@
           {{ 'checkout.payment' | t }}
         </h2>
         <div class="mt-6 flex gap-4 rounded-xl bg-accent-50 p-4 text-sm leading-6 text-accent-900">
-          <mat-icon class="shrink-0 !text-accent-600" aria-hidden="true">credit_card</mat-icon>
-          <p>{{ 'checkout.demoPayment' | t }}</p>
+          <mat-icon class="shrink-0 !text-accent-600" aria-hidden="true">
+            {{ mode() === 'mock' ? 'credit_card' : 'account_balance_wallet' }}
+          </mat-icon>
+          @switch (mode()) {
+            @case ('mock') {
+              <p>{{ 'checkout.demoPayment' | t }}</p>
+            }
+            @case ('sandbox') {
+              <p>{{ 'checkout.paypalSandbox' | t }}</p>
+            }
+            @case ('live') {
+              <p>{{ 'checkout.paypalLive' | t }}</p>
+            }
+          }
         </div>
       </section>
     </div>
@@ -100,9 +112,18 @@
         </div>
       }
 
-      <button matButton="filled" type="submit" class="mt-6 !h-12 w-full" [disabled]="placing()">
-        {{ 'checkout.place' | t }}
-      </button>
+      @if (mode() === 'mock') {
+        <button matButton="filled" type="submit" class="mt-6 !h-12 w-full" [disabled]="placing()">
+          {{ 'checkout.place' | t }}
+        </button>
+      } @else if (paypalUnavailable()) {
+        <p class="mt-6 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">
+          {{ 'checkout.paypalUnavailable' | t }}
+        </p>
+      } @else {
+        <!-- PayPal's buttons render here; they stay inert while an order is being completed. -->
+        <div #paypalButtons class="mt-6 min-h-12" [class.pointer-events-none]="placing()" [class.opacity-50]="placing()"></div>
+      }
       <a matButton routerLink="/cart" class="mt-2 w-full">{{ 'checkout.backToCart' | t }}</a>
     </aside>
   </form>

@@ -1,6 +1,6 @@
 # Store
 
-A full-stack e-commerce store built as a learning and portfolio project. Nothing is really sold and no money moves: payment is simulated. The rest works end to end: catalog, cart, accounts, checkout, order history, and an admin area for products and orders.
+A full-stack e-commerce store built as a learning and portfolio project. Payment is simulated by default; with PayPal credentials the store takes payments through PayPal, in the sandbox unless you switch to live (see [Payments with PayPal](#payments-with-paypal)). The rest works end to end: catalog, cart, accounts, checkout, order history, and an admin area for products and orders.
 
 - **Frontend:** Angular 22 (standalone components, signals, NgRx Signal Store for settings), styled with Tailwind CSS 4 and Angular Material, client-side rendered
 - **Backend:** Express 5 REST API in TypeScript, Mongoose, sessions stored in MongoDB
@@ -19,10 +19,10 @@ A full-stack e-commerce store built as a learning and portfolio project. Nothing
   - Passwords are hashed with bcrypt.
   - Sessions are stored server-side with an httpOnly, SameSite=Lax cookie.
 - **Checkout:**
-  - Requires login and a shipping address, and uses a mock payment step.
+  - Requires login and a shipping address. Payment is simulated, or goes through PayPal: the buyer approves in PayPal's window and the order is placed once the money is captured.
   - The server recalculates every price from the database and ignores prices sent by the browser.
   - Each order stores a snapshot of each product's name and price.
-- **Order history:** customers see their orders and can cancel one until it ships.
+- **Order history:** customers see their orders and can cancel one until it ships. Cancelling a PayPal order refunds it.
 - **Admin:**
   - Create, edit and delete products, with prices entered in euros.
   - Give each product 1 to 15 images: upload several at once (JPEG, PNG, WebP or GIF, up to 5 MB each) or add links to images hosted elsewhere, then reorder them. The first image is the cover. Uploads are stored in MongoDB (GridFS) and deleted once no product uses them.
@@ -88,8 +88,32 @@ Compose reads `.env` from the project root. The file is git-ignored; `.env.examp
 | `SESSION_SECRET` | none (dev mode: an insecure built-in secret) | Signs session cookies. Required in production-like mode: at least 32 characters |
 | `COOKIE_SECURE` | `false` in Compose, `true` in production otherwise | Send the session cookie only over HTTPS. The local stack serves plain HTTP, so keep it `false` there and set `true` behind HTTPS |
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | dev mode: `admin@example.com` / `admin-password` | First admin account, created on startup if no user with that email exists. Changing the password later doesn't change an existing account |
+| `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` | none: payments are simulated | PayPal REST app credentials. Set both to take payments through PayPal |
+| `PAYPAL_ENVIRONMENT` | `sandbox` | `sandbox` (test accounts, no real money) or `live` (**real money**) |
 | `WEB_PORT` | `8080` | Production-like mode: port nginx listens on |
 | `WEB_DEV_PORT`, `API_PORT`, `MONGO_PORT` | `4200`, `3000`, `27017` | Dev mode: host ports |
+
+## Payments with PayPal
+
+Without PayPal credentials, payment is simulated and always succeeds. To take payments through PayPal:
+
+1. Log in at [developer.paypal.com](https://developer.paypal.com/dashboard/applications/sandbox), open **Apps & Credentials** (Sandbox), and create an app. Copy its client ID and secret.
+2. Put them in `.env` as `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET`, and restart: `docker compose -f compose.yaml up -d`. The API logs `Payments: PayPal sandbox`.
+3. Pay with a sandbox **personal** account from **Testing Tools → Sandbox Accounts**. No real money moves; the sandbox business account receives the payment.
+
+**How a payment works:**
+
+1. `POST /api/checkout` prices the cart from the database, stores the attempt and creates a PayPal order for exactly that total.
+2. The buyer approves in PayPal's window.
+3. `POST /api/checkout/:id/complete` captures the payment and checks that the captured amount and currency match the stored total. Only then is the order created, with the PayPal capture id as its payment reference.
+
+Completing twice returns the same order, and PayPal requests carry idempotency keys, so a retry never charges twice. Cancelling a PayPal order, by the customer or an admin, refunds it in full; if the refund fails, the order stays placed. If a captured payment ever doesn't match, the API logs a line containing `Needs manual review`.
+
+**Going live** (`PAYPAL_ENVIRONMENT=live`, with the credentials of a live app from a PayPal business account) takes real money. Before doing that:
+
+- Serve the store over HTTPS and set `COOKIE_SECURE=true`.
+- This project doesn't cover what selling to real customers requires, such as an imprint, terms, a privacy policy, the EU right of withdrawal, VAT and invoices, or shipping costs. Check your obligations first.
+- Place a small real order and refund it, and watch the API log.
 
 ## Running without Docker
 
@@ -114,6 +138,7 @@ npm test -w frontend     # Angular unit tests
   - auth and sessions
   - catalog search, filters and pagination
   - checkout price recalculation and validation
+  - the PayPal flow: capture checks, retries, declines, refunds, and the PayPal API client against a fake PayPal
   - order privacy and the status lifecycle
   - admin authorization
   - image upload, type detection, image lists and cleanup
@@ -137,7 +162,8 @@ The first backend run downloads a MongoDB binary (about 180 MB unpacked) into `~
 │   │   ├── routes/         one router per resource
 │   │   ├── session.ts      sessions, currentUser, requireAuth, requireAdmin
 │   │   ├── order-status.ts order lifecycle rules
-│   │   └── payments.ts     PaymentProvider interface and the mock provider
+│   │   ├── payments.ts     PaymentProvider interface and the simulated provider
+│   │   └── paypal.ts       PayPal provider (Orders v2 and refunds, over fetch)
 │   └── test/
 ├── frontend/   Angular app (a folder per feature: catalog, product, cart, checkout, orders, auth, admin)
 │   └── src/
@@ -161,9 +187,11 @@ Every route is under `/api`. Errors always have the shape `{ "error": { "code", 
 | GET | `/categories` | anyone | The fixed category list |
 | POST | `/auth/register`, `/auth/login`, `/auth/logout` | anyone | Account and session |
 | GET | `/auth/me` | logged in | Current user |
-| POST | `/orders` | logged in | Place an order: `{ lines: [{ productId, quantity }], shippingAddress }` |
+| GET | `/checkout/config` | anyone | Payment mode for the browser: simulated, or PayPal with its public client ID |
+| POST | `/checkout` | logged in | Start paying: `{ lines: [{ productId, quantity }], shippingAddress }`. Returns `{ checkoutId, providerOrderId }` |
+| POST | `/checkout/:id/complete` | logged in | Capture the approved payment and place the order |
 | GET | `/orders`, `/orders/:id` | logged in | Your own orders |
-| POST | `/orders/:id/cancel` | logged in | Cancel your order while it is placed |
+| POST | `/orders/:id/cancel` | logged in | Cancel your order while it is placed; PayPal orders are refunded |
 | GET | `/images/:id` | anyone | An uploaded image |
 | POST, PUT, DELETE | `/admin/products[/:id]` | admin | Manage products. `images` is a list of 1–15 http(s) URLs or uploaded images' `/api/images/:id`, cover first. Products also return the cover as `imageUrl` |
 | POST | `/admin/images` | admin | Upload an image: the raw file as the body. Returns `{ url }` |
@@ -179,7 +207,7 @@ Every route is under `/api`. Errors always have the shape `{ "error": { "code", 
 - **Dark mode without `dark:` everywhere:** pages use plain zinc shades and `bg-surface`; in the dark theme `tailwind.css` mirrors the zinc scale and swaps the surface colour, so each shade keeps its role. Use `bg-surface` for cards and inputs, and `text-zinc-50` (not `text-white`) on `bg-zinc-900`. `white` and `black` stay fixed, for text on colour and overlays on photos.
 - **Adding a language:** copy `frontend/src/app/i18n/de.ts`, translate it, and add the language to `LANGUAGES` and `loadLanguage` in `languages.ts`. The build fails if a translation is missing a key, and a unit test checks that every `{placeholder}` is kept. Templates use `{{ 'key' | t }}` (and `tn` for plurals); a mistyped key is a compile error. API errors are translated by their `code`.
 - **Out of scope for this version:**
-  - real payments, taxes and shipping costs
+  - taxes, invoices and shipping costs
   - inventory, reviews and guest checkout
   - emails and password reset
   - server-side rendering and end-to-end browser tests

@@ -1,3 +1,5 @@
+import type { PaymentProviderName } from './checkout.js';
+
 export const ORDER_STATUSES = ['placed', 'shipped', 'delivered', 'cancelled'] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
@@ -33,12 +35,17 @@ export interface Order {
   totalCents: number;
   shippingAddress: ShippingAddress;
   status: OrderStatus;
+  /** Who took the payment; orders from before real payments were simulated ('mock'). */
+  paymentProvider: PaymentProviderName;
+  /** The provider's id for the payment, e.g. a PayPal capture id. */
   paymentReference: string;
+  /** The provider's refund id, once a paid order was cancelled and refunded. */
+  refundReference?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-/** Body of `POST /api/orders`. Prices are never sent: the server looks them up. */
+/** Body of `POST /api/checkout`. Prices are never sent: the server looks them up. */
 export interface CreateOrderRequest {
   lines: { productId: string; quantity: number }[];
   shippingAddress: ShippingAddress;

@@ -1,9 +1,9 @@
 import request from 'supertest';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import type { Order } from '@store/shared';
 import { productModel } from '../src/models/product.js';
-import { PaymentDeclinedError, type PaymentProvider } from '../src/payments.js';
 import { useTestApp, type TestContext } from './test-app.js';
+import { checkout } from './checkout-helper.js';
 
 const address = {
   name: 'Alice Example',
@@ -28,7 +28,7 @@ async function loggedInAs(ctx: TestContext, email: string) {
   return client;
 }
 
-describe('POST /api/orders', () => {
+describe('checkout with simulated payment', () => {
   const ctx = useTestApp();
   let ids: { lamp: string; mug: string };
 
@@ -39,7 +39,7 @@ describe('POST /api/orders', () => {
   it('places an order priced from the database, with snapshots of each line', async () => {
     const client = await loggedInAs(ctx, 'alice@example.com');
 
-    const res = await client.post('/api/orders').send({
+    const res = await checkout(client, {
       lines: [
         { productId: ids.lamp, quantity: 2 },
         { productId: ids.mug, quantity: 1 },
@@ -66,7 +66,7 @@ describe('POST /api/orders', () => {
   it('ignores prices and totals sent by the client', async () => {
     const client = await loggedInAs(ctx, 'mallory@example.com');
 
-    const res = await client.post('/api/orders').send({
+    const res = await checkout(client, {
       lines: [{ productId: ids.lamp, quantity: 1, priceCents: 1, unitPriceCents: 1, name: 'Free lamp' }],
       totalCents: 1,
       shippingAddress: address,
@@ -80,18 +80,14 @@ describe('POST /api/orders', () => {
   it('cannot be forced into another status', async () => {
     const client = await loggedInAs(ctx, 'eve@example.com');
 
-    const res = await client
-      .post('/api/orders')
-      .send({ lines: [{ productId: ids.mug, quantity: 1 }], shippingAddress: address, status: 'delivered' });
+    const res = await checkout(client, { lines: [{ productId: ids.mug, quantity: 1 }], shippingAddress: address, status: 'delivered' });
 
     expect(res.body.status).toBe('placed');
   });
 
   it('keeps the price snapshot when the product changes later', async () => {
     const client = await loggedInAs(ctx, 'snap@example.com');
-    const placed = await client
-      .post('/api/orders')
-      .send({ lines: [{ productId: ids.mug, quantity: 1 }], shippingAddress: address });
+    const placed = await checkout(client, { lines: [{ productId: ids.mug, quantity: 1 }], shippingAddress: address });
 
     await productModel(ctx.db).updateOne({ _id: ids.mug }, { name: 'Renamed Mug', priceCents: 9999 });
     const stored = await ctx.db.collection('orders').findOne({ paymentReference: placed.body.paymentReference });
@@ -103,7 +99,7 @@ describe('POST /api/orders', () => {
   it('names the lines whose products no longer exist', async () => {
     const client = await loggedInAs(ctx, 'bob@example.com');
 
-    const res = await client.post('/api/orders').send({
+    const res = await checkout(client, {
       lines: [
         { productId: ids.mug, quantity: 1 },
         { productId: '64b7f0000000000000000000', quantity: 1 },
@@ -126,9 +122,7 @@ describe('POST /api/orders', () => {
   ])('rejects quantity %s (%s)', async (quantity) => {
     const client = await loggedInAs(ctx, `q${String(quantity).replace(/\W/g, '')}@example.com`);
 
-    const res = await client
-      .post('/api/orders')
-      .send({ lines: [{ productId: ids.mug, quantity }], shippingAddress: address });
+    const res = await checkout(client, { lines: [{ productId: ids.mug, quantity }], shippingAddress: address });
 
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('invalid_lines');
@@ -138,11 +132,11 @@ describe('POST /api/orders', () => {
   it('rejects an empty cart and duplicate lines', async () => {
     const client = await loggedInAs(ctx, 'dup@example.com');
 
-    const empty = await client.post('/api/orders').send({ lines: [], shippingAddress: address });
+    const empty = await checkout(client, { lines: [], shippingAddress: address });
     expect(empty.status).toBe(400);
     expect(empty.body.error.fields).toHaveProperty('lines');
 
-    const dup = await client.post('/api/orders').send({
+    const dup = await checkout(client, {
       lines: [
         { productId: ids.mug, quantity: 1 },
         { productId: ids.mug, quantity: 2 },
@@ -156,7 +150,7 @@ describe('POST /api/orders', () => {
   it('requires a complete shipping address', async () => {
     const client = await loggedInAs(ctx, 'addr@example.com');
 
-    const res = await client.post('/api/orders').send({
+    const res = await checkout(client, {
       lines: [{ productId: ids.mug, quantity: 1 }],
       shippingAddress: { ...address, street: '  ', city: undefined, postalCode: 'x'.repeat(21) },
     });
@@ -174,52 +168,18 @@ describe('POST /api/orders', () => {
     const before = await ctx.db.collection('orders').countDocuments();
     const client = await loggedInAs(ctx, 'nothing@example.com');
 
-    await client.post('/api/orders').send({ lines: [{ productId: ids.mug, quantity: 0 }], shippingAddress: address });
+    await checkout(client, { lines: [{ productId: ids.mug, quantity: 0 }], shippingAddress: address });
 
     expect(await ctx.db.collection('orders').countDocuments()).toBe(before);
   });
 
   it('requires login', async () => {
-    const res = await request(ctx.app)
-      .post('/api/orders')
+    const start = await request(ctx.app)
+      .post('/api/checkout')
       .send({ lines: [{ productId: ids.mug, quantity: 1 }], shippingAddress: address });
+    const complete = await request(ctx.app).post('/api/checkout/64b7f0000000000000000000/complete');
 
-    expect(res.status).toBe(401);
-  });
-});
-
-describe('POST /api/orders with a payment provider', () => {
-  const charge = vi.fn<PaymentProvider['charge']>();
-  const ctx = useTestApp({ payments: { charge } });
-  let ids: { lamp: string; mug: string };
-
-  beforeAll(async () => {
-    ids = await insertProducts(ctx);
-  });
-
-  it('charges the server-calculated total in euros', async () => {
-    charge.mockResolvedValueOnce({ reference: 'pay_123' });
-    const client = await loggedInAs(ctx, 'payer@example.com');
-
-    const res = await client
-      .post('/api/orders')
-      .send({ lines: [{ productId: ids.lamp, quantity: 3 }], shippingAddress: address });
-
-    expect(res.status).toBe(201);
-    expect(res.body.paymentReference).toBe('pay_123');
-    expect(charge).toHaveBeenCalledWith({ amountCents: 3 * 4999, currency: 'EUR', customerEmail: 'payer@example.com' });
-  });
-
-  it('returns 402 and stores no order when the payment is declined', async () => {
-    charge.mockRejectedValueOnce(new PaymentDeclinedError('card declined'));
-    const client = await loggedInAs(ctx, 'declined@example.com');
-
-    const res = await client
-      .post('/api/orders')
-      .send({ lines: [{ productId: ids.mug, quantity: 1 }], shippingAddress: address });
-
-    expect(res.status).toBe(402);
-    expect(res.body.error.code).toBe('payment_declined');
-    expect(await ctx.db.collection('orders').countDocuments({ paymentReference: { $exists: true }, 'lines.name': 'Mug' })).toBe(0);
+    expect(start.status).toBe(401);
+    expect(complete.status).toBe(401);
   });
 });

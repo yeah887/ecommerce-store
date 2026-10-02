@@ -7,6 +7,7 @@ import { adminOrdersRouter } from './routes/admin-orders.js';
 import { adminProductsRouter } from './routes/admin-products.js';
 import { authRouter } from './routes/auth.js';
 import { categoriesRouter } from './routes/categories.js';
+import { checkoutRouter } from './routes/checkout.js';
 import { healthRouter } from './routes/health.js';
 import { adminImagesRouter, imagesRouter } from './routes/images.js';
 import { ordersRouter } from './routes/orders.js';
@@ -41,13 +42,14 @@ export function createApp({ db, config, payments = new MockPaymentProvider() }: 
   app.use('/api/products', productsRouter(db));
   app.use('/api/categories', categoriesRouter());
   app.use('/api/auth', authRouter(db, config));
+  app.use('/api/checkout', checkoutRouter(db, payments));
   app.use('/api/orders', ordersRouter(db, payments));
 
   // Everything under /api/admin, including unknown paths, is admins-only.
   app.use('/api/admin', requireAdmin);
   app.use('/api/admin/products', adminProductsRouter(db, images));
   app.use('/api/admin/images', adminImagesRouter(images));
-  app.use('/api/admin/orders', adminOrdersRouter(db));
+  app.use('/api/admin/orders', adminOrdersRouter(db, payments));
 
   app.use('/api', notFoundHandler);
   app.use(errorHandler);

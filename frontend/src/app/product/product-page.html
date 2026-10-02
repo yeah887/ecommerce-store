@@ -37,7 +37,7 @@
       <ul class="mt-8 space-y-3 text-sm text-zinc-600">
         <li class="flex items-center gap-3">
           <mat-icon class="icon-20 !text-zinc-400" aria-hidden="true">lock</mat-icon>
-          {{ 'product.perkPayment' | t }}
+          {{ (payments.usesPayPal() ? 'product.perkPaymentPaypal' : 'product.perkPayment') | t }}
         </li>
         <li class="flex items-center gap-3">
           <mat-icon class="icon-20 !text-zinc-400" aria-hidden="true">local_shipping</mat-icon>

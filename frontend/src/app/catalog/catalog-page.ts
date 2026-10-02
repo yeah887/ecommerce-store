@@ -14,6 +14,7 @@ import {
 } from '@store/shared';
 import { AddToCart } from '../cart/add-to-cart';
 import { I18n } from '../i18n/i18n';
+import { PaymentMode } from '../payments/payment-mode';
 import { SettingsStore } from '../settings/settings-store';
 import { FilterPills, type FilterOption } from '../shared/filter-pills';
 import { ProductCard } from './product-card';
@@ -41,6 +42,7 @@ export class CatalogPage {
   private readonly router = inject(Router);
   protected readonly addToCart = inject(AddToCart);
   private readonly i18n = inject(I18n);
+  protected readonly payments = inject(PaymentMode);
 
   // Bound from the URL query params (?q=&category=&page=).
   readonly q = input<string>();
